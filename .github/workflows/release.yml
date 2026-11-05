@@ -1,0 +1,28 @@
+name: release
+# 打 v* tag 时在 macOS runner 上编 universal Rake.app、打 Rake.dmg，上传到这个 tag 的 Release。
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Check VERSION matches tag
+        run: test "v$(tr -d '[:space:]' < VERSION)" = "${GITHUB_REF_NAME}"
+      - name: Test
+        run: scripts/test.sh
+      - name: Build
+        run: scripts/build.sh
+      - name: DMG
+        run: scripts/dmg.sh
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/Rake.dmg install.sh \
+            --title "Rake $GITHUB_REF_NAME" --generate-notes || \
+          gh release upload "$GITHUB_REF_NAME" build/Rake.dmg install.sh --clobber
