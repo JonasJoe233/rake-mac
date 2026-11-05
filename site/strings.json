@@ -1,5 +1,5 @@
 {
-"en": {
+ "en": {
   "app.name": "Rake",
   "app.title": "Rake — disk cleanup",
   "app.rescan": "Rescan",
@@ -20,9 +20,9 @@
   "app.noteShort": "Even after the two groups above you'll have less than 20 G. These may help.",
   "app.goEmpty": "Select items to clean",
   "app.goN": "Clean {n} items, free {size}",
-  "app.legendAuto": "● Safe to clean",
+  "app.legendAuto": "● Safe",
   "app.legendDecide": "◐ Check first",
-  "app.legendSel": "Bold outline = selected",
+  "app.legendSel": "Bold = selected",
   "app.legendUnk": "Dotted = unclassified",
   "app.footDemo": "Demo data. Nothing here touches your disk.",
   "app.footLive": "Scanned {time}. Only what you select is cleaned, after you see the list.",
@@ -54,17 +54,14 @@
   "app.noLog": "Nothing cleaned yet",
   "app.keepNote": "Rake refuses to delete anything in these places, even if a rule points there.",
   "app.otherMerged": "Merged: {list}",
-
   "kind.content": "Your files: can't be recovered once deleted",
   "kind.tools": "Apps and tools: reinstall or redownload if deleted",
   "kind.caches": "Cache: apps rebuild it on their own",
   "kind.system": "System: managed by macOS",
   "kind.unknown": "Unclassified: no rule recognises it yet",
   "kind.free": "Free space",
-
   "tier.auto": "Safe to clean",
   "tier.decide": "Check first",
-
   "stone.free": "Available",
   "stone.photo": "Photos & media",
   "stone.docs": "Documents, Desktop & Downloads",
@@ -83,7 +80,6 @@
   "other.tools": "Other tools",
   "other.caches": "Other caches",
   "other.system": "Other system",
-
   "why.photo": "~/Pictures, ~/Movies and ~/Music.",
   "why.docs": "~/Documents, ~/Desktop and ~/Downloads, minus old downloads listed separately.",
   "why.code": "Other visible folders in your home folder, such as projects.",
@@ -97,7 +93,6 @@
   "why.sysdata": "/Library, /private/var and /Users/Shared. Some parts need admin rights to read.",
   "why.appc": "~/Library/Caches not covered by a rule.",
   "why.unk": "Used space no rule explains: local snapshots, other users, folders Rake can't read.",
-
   "rule.upd.label": "App update packages",
   "rule.upd.why": "Updates that apps downloaded and already installed (Sparkle, ShipIt, *-updater). Anything changed in the last 6 hours is skipped.",
   "rule.upd.cmd": "~/Library/Caches/*/org.sparkle-project.Sparkle, *.ShipIt/update.*, *-updater/update.zip",
@@ -134,7 +129,6 @@
   "rule.mid.label": "Old macOS installer",
   "rule.mid.why": "Leftovers from an earlier macOS upgrade. Removing them needs an admin password.",
   "rule.mid.cmd": "sudo rm -rf \"/System/Volumes/Data/macOS Install Data\"",
-
   "keep.keychains": "Keychains",
   "keep.keychains.why": "Your passwords and certificates.",
   "keep.cloud": "iCloud Drive and cloud folders",
@@ -153,7 +147,6 @@
   "keep.system.why": "/System, /usr and anything outside your home folder.",
   "keep.links": "Links that point elsewhere",
   "keep.links.why": "A link whose target is outside your home folder.",
-
   "guard.relative": "not an absolute path",
   "guard.system": "system location",
   "guard.home": "your home folder itself",
@@ -163,7 +156,6 @@
   "guard.link": "a link that points outside your home folder",
   "guard.keep": "protected: {name}",
   "guard.gone": "already gone",
-
   "site.title": "Rake — free, open source disk cleanup for Mac",
   "site.description": "See where your Mac's space went, read the exact list, then clean. Free, open source, runs offline.",
   "site.h1": "See where the space went. Then clean.",
@@ -193,8 +185,8 @@
   "site.first.curl": "The Terminal command downloads Rake.dmg from GitHub Releases, copies Rake into /Applications and ejects the disk image. Files downloaded by curl don't carry the quarantine flag, so macOS doesn't show the warning. It never asks for your password.",
   "site.first.perm": "When Rake first reads Desktop, Documents or Downloads, macOS asks for access. If you say no, those folders are skipped and counted as unclassified.",
   "site.footer": "MIT License · Made with SwiftUI · Source on GitHub"
-},
-"zh-Hans": {
+ },
+ "zh-Hans": {
   "app.name": "Rake",
   "app.title": "Rake 磁盘清理",
   "app.rescan": "重新扫描",
@@ -249,17 +241,14 @@
   "app.noLog": "还没清理过",
   "app.keepNote": "就算规则指到这些地方，Rake 也拒绝删除。",
   "app.otherMerged": "合并显示：{list}",
-
   "kind.content": "你的文件：删了找不回",
   "kind.tools": "应用与工具：删了要重装或重下",
   "kind.caches": "缓存：删了会自己再生",
   "kind.system": "系统：由 macOS 管理",
   "kind.unknown": "未归类：规则还认不出",
   "kind.free": "可用空间",
-
   "tier.auto": "安全可清",
   "tier.decide": "检查后再清",
-
   "stone.free": "可用",
   "stone.photo": "照片与影音",
   "stone.docs": "文稿、桌面与下载",
@@ -278,7 +267,6 @@
   "other.tools": "其他工具",
   "other.caches": "其他缓存",
   "other.system": "其他系统",
-
   "why.photo": "~/Pictures、~/Movies、~/Music。",
   "why.docs": "~/Documents、~/Desktop、~/Downloads，不含单独列出的旧下载。",
   "why.code": "主目录下其余可见的文件夹，比如各个项目。",
@@ -292,7 +280,6 @@
   "why.sysdata": "/Library、/private/var、/Users/Shared。部分目录要管理员权限才读得到。",
   "why.appc": "~/Library/Caches 里规则没覆盖的部分。",
   "why.unk": "规则解释不了的已用空间：本地快照、其他用户、Rake 读不到的文件夹。",
-
   "rule.upd.label": "应用更新包",
   "rule.upd.why": "各应用下载并已装好的更新包（Sparkle、ShipIt、*-updater）。6 小时内改动过的跳过。",
   "rule.upd.cmd": "~/Library/Caches/*/org.sparkle-project.Sparkle、*.ShipIt/update.*、*-updater/update.zip",
@@ -329,7 +316,6 @@
   "rule.mid.label": "旧系统安装残留",
   "rule.mid.why": "以前升级 macOS 留下的。删除要管理员密码。",
   "rule.mid.cmd": "sudo rm -rf \"/System/Volumes/Data/macOS Install Data\"",
-
   "keep.keychains": "钥匙串",
   "keep.keychains.why": "你的密码和证书。",
   "keep.cloud": "iCloud 云盘和云同步文件夹",
@@ -348,7 +334,6 @@
   "keep.system.why": "/System、/usr，以及主目录以外的一切。",
   "keep.links": "指向别处的链接",
   "keep.links.why": "目标在主目录以外的链接。",
-
   "guard.relative": "不是绝对路径",
   "guard.system": "系统位置",
   "guard.home": "主目录本身",
@@ -358,7 +343,6 @@
   "guard.link": "指向主目录以外的链接",
   "guard.keep": "不能动：{name}",
   "guard.gone": "已经不在了",
-
   "site.title": "Rake：免费开源的 Mac 磁盘清理",
   "site.description": "一张图看清 Mac 的空间去哪了，看完清单再清。免费开源，不联网。",
   "site.h1": "先看清空间去哪了，再清。",
@@ -388,5 +372,5 @@
   "site.first.curl": "终端命令会从 GitHub Releases 下载 Rake.dmg，把 Rake 复制到 /Applications，再推出磁盘映像。curl 下载的文件不带隔离标记，所以 macOS 不弹提示。整个过程不要密码。",
   "site.first.perm": "Rake 第一次读桌面、文稿、下载时，macOS 会问你要不要允许。选不允许，这些文件夹就跳过，算进未归类。",
   "site.footer": "MIT 协议 · 用 SwiftUI 写成 · 源码在 GitHub"
-}
+ }
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>Rake</string>
+  <key>CFBundleDisplayName</key><string>Rake</string>
+  <key>CFBundleIdentifier</key><string>io.github.jonasjoe233.rake</string>
+  <key>CFBundleExecutable</key><string>Rake</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>@VERSION@</string>
+  <key>CFBundleVersion</key><string>@BUILD@</string>
+  <key>CFBundleIconFile</key><string>Rake</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>zh-Hans</string></array>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSHumanReadableCopyright</key><string>MIT License. Free and open source.</string>
+  <key>NSDesktopFolderUsageDescription</key><string>Rake measures how much space your Desktop uses. Nothing is uploaded.</string>
+  <key>NSDocumentsFolderUsageDescription</key><string>Rake measures how much space Documents uses. Nothing is uploaded.</string>
+  <key>NSDownloadsFolderUsageDescription</key><string>Rake measures Downloads and lists old large files you may want to move to the Trash.</string>
+</dict>
+</plist>
