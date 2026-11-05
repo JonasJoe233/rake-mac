@@ -1,0 +1,33 @@
+Rake
+Copyright (c) 2026 Jonas (JonasJoe233). Released under the MIT License (see LICENSE).
+
+Visual reference
+----------------
+The pebble-map look (a weighted Voronoi "power diagram" of rounded stones on a
+warm sand ground, with raked rings for free space) was inspired by the public
+website kanso.botiverse.build (Kanso, by Botiverse, Inc.), viewed on 2026-11-05.
+
+What we checked on that site (2026-11-05):
+- The site footer reads "(c) 2026 Botiverse, Inc." and links Privacy, Terms and
+  "Open source licenses".
+- /terms/ ("Last updated: November 2, 2026") grants use of the Kanso app on Macs
+  you own or control, forbids reselling it or removing its notices, and says
+  bundled open source components keep their own licenses.
+- /licenses.txt lists third-party components shipped inside Kanso (for example
+  @agentclientprotocol/sdk, Apache-2.0). It does not license Kanso's own code,
+  artwork or website design.
+- No LICENSE file is published at the site root (/LICENSE and /license return 404).
+
+Conclusion: Kanso's code, screenshots, icon and site design are not open source
+and are not licensed to us. Rake does not copy any of them. No file, image,
+stylesheet, script or text from that site is included in this repository. The
+pebble map, its geometry code (written from scratch, citing Nocaj & Brandes 2012
+for the weighted Voronoi bound), colors and copy are original work under MIT.
+An overall visual idea is not something we redistribute; we credit it here as a
+courtesy and keep the product name out of the code and copy.
+
+Third-party code
+----------------
+None. Rake uses only Apple system frameworks (Foundation, SwiftUI, AppKit,
+WebKit) and the Swift standard library. Tests use swift-testing, which ships
+with the Swift toolchain.
