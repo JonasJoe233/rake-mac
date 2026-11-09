@@ -46,7 +46,6 @@
   "app.cleaning": "Cleaning…",
   "app.failed": "Failed",
   "app.applyFailed": "Something went wrong: {err}. Nothing outside the list was touched.",
-  "app.trashedNote": "{size} went to the Trash. Empty the Trash in Finder to free that space.",
   "app.close": "Close",
   "app.growTitle": "Grew the most since {date}",
   "app.noSnapshot": "No earlier scan yet",
@@ -184,7 +183,16 @@
   "site.first.shot": "Screenshot to be added",
   "site.first.curl": "The Terminal command downloads Rake.dmg from GitHub Releases, copies Rake into /Applications and ejects the disk image. Files downloaded by curl don't carry the quarantine flag, so macOS doesn't show the warning. It never asks for your password.",
   "site.first.perm": "When Rake first reads Desktop, Documents or Downloads, macOS asks for access. If you say no, those folders are skipped and counted as unclassified.",
-  "site.footer": "MIT License · Made with SwiftUI · Source on GitHub"
+  "site.footer": "MIT License · Made with SwiftUI · Source on GitHub",
+  "app.cleaningTitle": "Cleaning",
+  "app.stepWaiting": "Waiting",
+  "app.stepDone": "Freed {size}",
+  "app.stepTrashed": "{size} to the Trash",
+  "app.stepSkipped": "{n} skipped",
+  "app.toastDone": "Cleaned {n} items, freed {size}.",
+  "app.toastTrashed": "{size} went to the Trash. You can put it back in Finder. Empty the Trash to free that space.",
+  "app.trashedLabel": "In the Trash",
+  "app.refreshing": "Rescanning in the background…"
  },
  "zh-Hans": {
   "app.name": "Rake",
@@ -233,7 +241,6 @@
   "app.cleaning": "清理中…",
   "app.failed": "失败",
   "app.applyFailed": "出错了：{err}。清单以外的东西没有碰。",
-  "app.trashedNote": "{size} 移进了废纸篓。在访达里清倒废纸篓，这部分空间才会腾出来。",
   "app.close": "关闭",
   "app.growTitle": "比 {date} 涨得最多",
   "app.noSnapshot": "还没有上一次扫描",
@@ -371,6 +378,15 @@
   "site.first.shot": "截图待补",
   "site.first.curl": "终端命令会从 GitHub Releases 下载 Rake.dmg，把 Rake 复制到 /Applications，再推出磁盘映像。curl 下载的文件不带隔离标记，所以 macOS 不弹提示。整个过程不要密码。",
   "site.first.perm": "Rake 第一次读桌面、文稿、下载时，macOS 会问你要不要允许。选不允许，这些文件夹就跳过，算进未归类。",
-  "site.footer": "MIT 协议 · 用 SwiftUI 写成 · 源码在 GitHub"
+  "site.footer": "MIT 协议 · 用 SwiftUI 写成 · 源码在 GitHub",
+  "app.cleaningTitle": "正在清理",
+  "app.stepWaiting": "等待",
+  "app.stepDone": "腾出 {size}",
+  "app.stepTrashed": "{size} 移进废纸篓",
+  "app.stepSkipped": "跳过 {n} 项",
+  "app.toastDone": "已清理 {n} 项，腾出 {size}。",
+  "app.toastTrashed": "{size} 移进了废纸篓，可以在访达里放回。清倒废纸篓后这部分空间才会腾出。",
+  "app.trashedLabel": "已进废纸篓",
+  "app.refreshing": "正在后台重新扫描…"
  }
 }

@@ -13,7 +13,9 @@ import Testing
         #expect(p.items.first { $0.id == "tc" }?.method == .remove)
         #expect(p.items.first { $0.id == "td" }?.method == .trash)
         #expect(p.items.flatMap { $0.paths }.count == 3)
-        let r = try e.apply(ids: ["tc", "td"], token: p.token)
+        var steps: [String] = []
+        let r = try e.apply(ids: ["tc", "td"], token: p.token) { id, _, _, skipped in steps.append("\(id):\(skipped)") }
+        #expect(steps == ["tc:0", "td:0"])                         // 每个 id 回调一次，按勾选顺序
         #expect(r.done == ["tc", "td"])
         #expect(!sb.exists("Library/Caches/TestApp/a.bin") && !sb.exists("Library/Caches/TestApp/b.bin"))
         #expect(!sb.exists("Downloads/old-installer.dmg"))

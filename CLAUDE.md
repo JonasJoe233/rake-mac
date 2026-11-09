@@ -55,3 +55,4 @@ scripts/dmg.sh           # 用 hdiutil 打 build/Rake.dmg
 - `swift build --arch arm64 --arch x86_64` 要 xcbuild，CLT 没有。所以分两次编再 `lipo`。
 - 测试里的真删只在临时目录。默认用假废纸篓；设 `RAKE_TEST_REAL_TRASH=1` 才测真的 `FileManager.trashItem`，测完只删它自己放进去的那个文件。
 - App 自带两个无界面开关，方便验收：`Rake --scan-json` 打印扫描结果；`Rake --snapshot <目录>` 扫描、出图、打开 auto 档的 dry-run 清单，各截一张图后退出，不会点确认删除。
+- 验收清理交互用 `Rake --test-home <临时目录> --snapshot <目录>`：主目录换成临时目录，自动走完勾选、清单、确认、逐项进度、已腾出、后台重扫，每步截图。`--test-home` 只接受 /tmp 和 /var/folders 下的目录。加 `RAKE_TEST_SLOW=1` 每项多停 0.8 秒，方便截到进度。

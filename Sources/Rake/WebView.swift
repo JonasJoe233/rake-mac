@@ -14,7 +14,7 @@ struct WebView: NSViewRepresentable {
         let dict = b.strings.map { String(decoding: $0.json, as: UTF8.self) } ?? "{}"
         let lang = b.strings?.lang ?? "en"
         let boot = """
-        window.RAKE_I18N=\(dict);window.RAKE_LANG="\(lang)";window.RAKE_VERSION="\(Resources.version)";
+        window.RAKE_I18N=\(dict);window.RAKE_LANG="\(lang)";window.RAKE_NATIVE=true;window.RAKE_VERSION="\(Resources.version)";
         (function(){const p=(l,m)=>{try{webkit.messageHandlers.rakeLog.postMessage({level:l,msg:String(m)})}catch(e){}};
         const ce=console.error.bind(console),cw=console.warn.bind(console);
         console.error=(...a)=>{p("error",a.join(" "));ce(...a)};console.warn=(...a)=>{p("warn",a.join(" "));cw(...a)};
@@ -26,6 +26,7 @@ struct WebView: NSViewRepresentable {
         wv.navigationDelegate = context.coordinator
         wv.setValue(false, forKey: "drawsBackground")  // 加载前不闪白
         b.webView = wv
+        DispatchQueue.main.async { Window.style(wv.window) }
         let page = Resources.web.appendingPathComponent("app.html")
         wv.loadFileURL(page, allowingReadAccessTo: Resources.web)
         if let s = b.snapshot { s.prepare(wv) }

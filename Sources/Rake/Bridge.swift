@@ -17,12 +17,37 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply, WKScriptMessageHa
     weak var webView: WKWebView?
     var consoleErrors: [String] = []
     let snapshot = Snapshot.fromArgs()
+    var slowApply = false  // 只在 --test-home 下：每项清完停 0.8 秒，方便截到进度
+
+    /// --test-home <目录>：只给验收用。引擎的主目录换成这个临时目录，废纸篓换成目录里的 .FakeTrash，
+    /// 只接受 /tmp、/private/tmp、/var/folders 下的目录，否则直接退出。
+    static let testHome: String? = {
+        let a = CommandLine.arguments
+        guard let i = a.firstIndex(of: "--test-home"), i + 1 < a.count else { return nil }
+        let p = URL(fileURLWithPath: a[i + 1]).resolvingSymlinksInPath().path
+        guard ["/private/tmp/", "/private/var/folders/", "/tmp/", "/var/folders/"].contains(where: { p.hasPrefix($0) }) else {
+            FileHandle.standardError.write("--test-home must be a temporary directory\n".data(using: .utf8)!)
+            exit(2)
+        }
+        return p
+    }()
 
     override init() {
         do {
             let s = try Resources.strings()
             strings = s
-            engine = Engine(.live(strings: s))
+            if let th = Bridge.testHome {
+                var c = EngineConfig(home: th, stateDir: th + "/.rake-state", strings: s)
+                let slow = ProcessInfo.processInfo.environment["RAKE_TEST_SLOW"] == "1"
+                c.trasher = { url in
+                    try FileManager.default.createDirectory(atPath: th + "/.FakeTrash", withIntermediateDirectories: true)
+                    try FileManager.default.moveItem(atPath: url.path, toPath: th + "/.FakeTrash/" + url.lastPathComponent)
+                }
+                engine = Engine(c)
+                slowApply = slow
+            } else {
+                engine = Engine(.live(strings: s))
+            }
             loadError = nil
         } catch {
             strings = nil; engine = nil
@@ -86,11 +111,19 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply, WKScriptMessageHa
                 }
             }
         case "apply":
-            guard snapshot == nil else { return reply(nil, "apply is disabled in --snapshot mode") }
+            guard snapshot == nil || Bridge.testHome != nil else { return reply(nil, "apply is disabled in --snapshot mode") }
             let token = body["token"] as? String ?? ""
+            let slow = slowApply
             work.async {
                 let r: (String?, String?)
-                do { r = (Bridge.encode(try engine.apply(ids: ids, token: token)), nil) } catch { r = (nil, "\(error)") }
+                do {
+                    let res = try engine.apply(ids: ids, token: token) { id, removed, trashed, skipped in
+                        if slow { Thread.sleep(forTimeInterval: 0.8) }
+                        let js = "window.rakeProgress&&rakeProgress(\(Bridge.encode(id)),\(removed),\(trashed),\(skipped))"
+                        DispatchQueue.main.async { self.webView?.evaluateJavaScript(js) }
+                    }
+                    r = (Bridge.encode(res), nil)
+                } catch { r = (nil, "\(error)") }
                 DispatchQueue.main.async {
                     if r.0 != nil { self.scanJSON = nil }  // 删过东西，下次要重扫
                     reply(r.0, r.1)

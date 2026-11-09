@@ -98,7 +98,9 @@ public final class Engine {
 
     // MARK: apply
 
-    public func apply(ids raw: [String], token: String) throws -> ApplyResult {
+    /// progress：每清完一个 id 回调一次（id、直接删掉的 GiB、移进废纸篓的 GiB、跳过几条），给界面逐项打勾。
+    public func apply(ids raw: [String], token: String,
+                      progress: ((String, Double, Double, Int) -> Void)? = nil) throws -> ApplyResult {
         lock.lock()
         let stored = plans.removeValue(forKey: token)  // 一次性：查一次就作废，成败都一样
         lock.unlock()
@@ -108,20 +110,26 @@ public final class Engine {
         let before = config.volumes().free
         var failed = Set<String>(), skipped: [String] = [], errors: [String] = []
         var removed: Int64 = 0, trashed: Int64 = 0
-        for e in st.entries {
-            if let why = guardian.check(e.path) {  // 确认之后路径变成链接、被换走、已不在：都跳过
-                skipped.append(disp(e.path) + " (" + guardian.describe(why, s) + ")")
-                continue
-            }
-            do {
-                switch e.method {
-                case .remove: try FileManager.default.removeItem(atPath: e.path); removed += e.bytes
-                case .trash: try config.trasher(URL(fileURLWithPath: e.path)); trashed += e.bytes
+        for id in st.ids {
+            var r: Int64 = 0, t: Int64 = 0, k = 0
+            for e in st.entries where e.id == id {
+                if let why = guardian.check(e.path) {  // 确认之后路径变成链接、被换走、已不在：都跳过
+                    skipped.append(disp(e.path) + " (" + guardian.describe(why, s) + ")")
+                    k += 1
+                    continue
                 }
-            } catch {
-                errors.append(disp(e.path) + ": " + error.localizedDescription)
-                failed.insert(e.id)
+                do {
+                    switch e.method {
+                    case .remove: try FileManager.default.removeItem(atPath: e.path); r += e.bytes
+                    case .trash: try config.trasher(URL(fileURLWithPath: e.path)); t += e.bytes
+                    }
+                } catch {
+                    errors.append(disp(e.path) + ": " + error.localizedDescription)
+                    failed.insert(e.id)
+                }
             }
+            removed += r; trashed += t
+            progress?(id, gb(r), gb(t), k)
         }
         let after = config.volumes().free
         let done = st.ids.filter { !failed.contains($0) }

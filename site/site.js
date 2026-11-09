@@ -29,7 +29,7 @@ let STONES=[], L=null, SIZE="";
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 const clamp=t=>Math.max(0,Math.min(1,t));
 function textW(s,px){let w=0;for(const ch of s)w+=/[　-鿿＀-￯]/.test(ch)?px:px*.56;return w;}
-const G=v=>v<0.095?Math.max(1,Math.round(v*1024))+" M":(v>=10?v.toFixed(0):v.toFixed(1))+" G";
+const G=v=>v<=0?"0 M":v<0.095?Math.max(1,Math.round(v*1024))+" M":(v>=10?v.toFixed(0):v.toFixed(1))+" G";
 function setup(){
   const box=$("#art").getBoundingClientRect(), W=Math.max(200,Math.round(box.width)), H=Math.max(160,Math.round(box.height));
   STONES=demoStones(T);
