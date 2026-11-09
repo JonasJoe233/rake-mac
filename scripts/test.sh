@@ -11,3 +11,4 @@ for f in strings.json pebbles.js; do
   cmp -s "$src" "site/$f" && echo "site/$f 与 $src 一致" || { echo "site/$f 过期，跑 scripts/sync-site.sh"; exit 1; }
 done
 [ "$(cat site/version.txt)" = "$(tr -d '[:space:]' < VERSION)" ] && echo "site/version.txt 与 VERSION 一致" || { echo "site/version.txt 过期"; exit 1; }
+bash scripts/test_install.sh

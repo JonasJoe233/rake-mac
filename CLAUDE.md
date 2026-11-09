@@ -46,7 +46,7 @@ rake-mac/
 ## 测试怎么跑
 
 ```
-scripts/test.sh          # swift test（swift-testing）+ 文案 key 校验 + site 副本一致性
+scripts/test.sh          # swift test（swift-testing）+ 文案 key 校验 + site 副本一致性 + install.sh 测试（有 build/Rake.dmg 时）
 scripts/build.sh         # 编 arm64 和 x86_64，lipo 成 universal，组装并 ad-hoc 签名 build/Rake.app
 scripts/dmg.sh           # 用 hdiutil 打 build/Rake.dmg
 ```

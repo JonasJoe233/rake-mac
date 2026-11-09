@@ -1,9 +1,8 @@
 name: pages
-# 推到 main 时把 site/ 部署到 GitHub Pages。需要在仓库设置里把 Pages 来源选成 GitHub Actions。
+# 每次推到 main 都把 site/ 部署到 GitHub Pages（不按路径过滤：第一次推新分支时 paths 过滤不会触发）。需要在仓库设置里把 Pages 来源选成 GitHub Actions。
 on:
   push:
     branches: [main]
-    paths: ["site/**"]
   workflow_dispatch:
 permissions:
   contents: read
