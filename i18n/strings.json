@@ -180,7 +180,6 @@
   "site.first.b1": "Rake isn't signed with a paid Apple developer certificate, so macOS asks before opening it the first time.",
   "site.first.b2": "On macOS 15 and later: open Rake once, close the warning, then go to System Settings → Privacy & Security and click Open Anyway.",
   "site.first.b3": "On macOS 13 and 14: right-click Rake in Applications and choose Open.",
-  "site.first.shot": "Screenshot to be added",
   "site.first.curl": "The Terminal command downloads Rake.dmg from GitHub Releases, copies Rake into /Applications and ejects the disk image. Files downloaded by curl don't carry the quarantine flag, so macOS doesn't show the warning. It never asks for your password.",
   "site.first.perm": "When Rake first reads Desktop, Documents or Downloads, macOS asks for access. If you say no, those folders are skipped and counted as unclassified.",
   "site.footer": "MIT License · Made with SwiftUI · Source on GitHub",
@@ -192,7 +191,9 @@
   "app.toastDone": "Cleaned {n} items, freed {size}.",
   "app.toastTrashed": "{size} went to the Trash. You can put it back in Finder. Empty the Trash to free that space.",
   "app.trashedLabel": "In the Trash",
-  "app.refreshing": "Rescanning in the background…"
+  "app.refreshing": "Rescanning in the background…",
+  "app.summaryEmpty": "Nothing left for the rules to clean.",
+  "site.first.shotAlt": "System Settings, Privacy & Security: \"Rake.app\" was blocked, with an Open Anyway button"
  },
  "zh-Hans": {
   "app.name": "Rake",
@@ -375,7 +376,6 @@
   "site.first.b1": "Rake 没有用付费的 Apple 开发者证书签名，所以第一次打开时 macOS 会先拦一下。",
   "site.first.b2": "macOS 15 及以上：先打开一次 Rake，关掉提示，再去「系统设置 → 隐私与安全性」，点「仍要打开」。",
   "site.first.b3": "macOS 13 和 14：在「应用程序」里右键 Rake，选「打开」。",
-  "site.first.shot": "截图待补",
   "site.first.curl": "终端命令会从 GitHub Releases 下载 Rake.dmg，把 Rake 复制到 /Applications，再推出磁盘映像。curl 下载的文件不带隔离标记，所以 macOS 不弹提示。整个过程不要密码。",
   "site.first.perm": "Rake 第一次读桌面、文稿、下载时，macOS 会问你要不要允许。选不允许，这些文件夹就跳过，算进未归类。",
   "site.footer": "MIT 协议 · 用 SwiftUI 写成 · 源码在 GitHub",
@@ -387,6 +387,8 @@
   "app.toastDone": "已清理 {n} 项，腾出 {size}。",
   "app.toastTrashed": "{size} 移进了废纸篓，可以在访达里放回。清倒废纸篓后这部分空间才会腾出。",
   "app.trashedLabel": "已进废纸篓",
-  "app.refreshing": "正在后台重新扫描…"
+  "app.refreshing": "正在后台重新扫描…",
+  "app.summaryEmpty": "规则能清的都清完了。",
+  "site.first.shotAlt": "系统设置的隐私与安全性：已阻止“Rake.app”，旁边是「仍要打开」按钮"
  }
 }

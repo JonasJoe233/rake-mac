@@ -12,6 +12,7 @@ function applyText(){
   document.title=T("site.title");
   document.querySelector('meta[name="description"]').setAttribute("content",T("site.description"));
   document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T(e.dataset.t));
+  document.querySelectorAll("[data-t-alt]").forEach(e=>e.alt=T(e.dataset.tAlt));
   $("#meta").textContent=T("site.meta",{v:VERSION});
   $("#lang").textContent=LANG==="en"?"中文":"English";
   $("#art").setAttribute("aria-label",T("site.f3.t"));

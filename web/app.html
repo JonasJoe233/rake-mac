@@ -181,13 +181,13 @@ function renderPanel(){
   $("#heroNote").innerHTML=sel.size?`${T("app.freeAfter")}<br>${T("app.nowIs",{size:G(free)})}`:`${T("app.freeNow")}<br>${T("app.totalIs",{size:G(tot())})}`;
   const auto=sum(tierIds("auto")), dec=sum(tierIds("decide"));
   const regen=sum(tierIds("auto").filter(i=>byId[i].kind==="caches"));
-  $("#summary").textContent=T("app.summary",{all:G(auto+dec),regen:G(regen)});
+  $("#summary").textContent=auto+dec>0?T("app.summary",{all:G(auto+dec),regen:G(regen)}):T("app.summaryEmpty");
   let h=section("auto","full",T("tier.auto"),tierIds("auto"))+section("decide","half",T("tier.decide"),tierIds("decide"));
   const info=[...tierIds("manual"),...tierIds("later")];
   if(info.length){
     const enough=free+auto+dec>=20;
     h+=`<div class="sec"><h3><span class="mark"></span>${T("app.readonly")}<span class="sz">${G(sum(info))}</span><button data-info>${showInfo?T("app.collapse"):T("app.expand",{n:info.length})}</button></h3>`+
-       `<div class="note">${enough?T("app.noteEnough",{size:G(free+auto+dec)}):T("app.noteShort")}</div>`+
+       (tierIds("auto").length+tierIds("decide").length?`<div class="note">${enough?T("app.noteEnough",{size:G(free+auto+dec)}):T("app.noteShort")}</div>`:"")+ // 上面两档都空了，这句没有指代
        (showInfo?info.map(rowHtml).join(""):"")+`</div>`;
   }
   $("#lists").innerHTML=h;
