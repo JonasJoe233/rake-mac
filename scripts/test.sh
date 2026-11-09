@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/swiftpm-env.sh
 # CLT 的 _Testing_Foundation.framework 缺 Modules，关掉 cross-import overlay 才能同时 import Testing 和 Foundation
-swift test "${SWIFT_TEST_FLAGS[@]}" -Xswiftc -Xfrontend -Xswiftc -disable-cross-import-overlays
+swift test ${SWIFT_TEST_FLAGS[@]+"${SWIFT_TEST_FLAGS[@]}"} -Xswiftc -Xfrontend -Xswiftc -disable-cross-import-overlays
 /usr/bin/python3 -I scripts/check_strings.py i18n/strings.json
 for f in strings.json pebbles.js; do
   src=$([ "$f" = strings.json ] && echo i18n/$f || echo web/$f)

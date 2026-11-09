@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15  # 要 Xcode 16 自带的 swift-testing；macos-14 默认 Xcode 15 没有
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
