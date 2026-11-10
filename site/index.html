@@ -6,43 +6,87 @@
 <title>Rake — free, open source disk cleanup for Mac</title>
 <meta name="description" content="See where your Mac's space went, read the exact list, then clean. Free, open source, runs offline.">
 <link rel="icon" href="icon.png">
+<link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/lora.woff2" as="font" type="font/woff2" crossorigin>
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&"IntersectionObserver" in window)document.documentElement.classList.add("anim");</script>
 <style>
-/* 配色和 App 同一套（web/app.html 的 :root）。字号只用 5 档：56 标题 / 20 副标题 / 16 正文 / 14 按钮与小标题 / 12.5 注释 */
+/* 和宣传片同一套版式：Lora 500 说话，Inter 报数。字体自托管在 fonts/，不连第三方。
+   字号只有 6 档（视频字号 ÷2）：110 大数字 / 55 单位 / 60 H1 / 32 H2 / 20 正文 / 15 标签；<720 宽换成 72 / 36 / 40 / 26 / 17 / 14。
+   字重只有 Inter 400、600 和 Lora 500。圆角只有卡片 28、控件 12、图标 8。强调色只标「283 GB?」和「+8.4 GB」。 */
+@font-face{font-family:InterV;src:url(fonts/inter.woff2) format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:LoraV;src:url(fonts/lora.woff2) format("woff2");font-weight:400 700;font-display:swap}
 :root{
-  --ground:#efebe1;--ink:#2a2926;--on-ink:#f4f1e9;--muted:#75726a;--rake:#cdc7b8;--line:rgba(42,41,38,.16);--hover:rgba(42,41,38,.05);
+  --g:#EFEAE0;--ink:#2A2925;--mute:#75736A;--line:#D9D3C7;--acc:#C8552D;--card:#EFEBE1;
+  --shadow:0 24px 60px rgba(42,41,37,.12),0 0 0 1px #E3DED4;
+  --serif:LoraV,"Songti SC",serif;--sans:InterV,-apple-system,"PingFang SC",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --display:110px;--unit:55px;--h1:60px;--h2:32px;--body:20px;--label:15px;
+  /* 卵石图沿用 App 的配色（web/app.html 的 :root），底色换成卡片底 */
+  --ground:var(--card);--on-ink:#f4f1e9;--rake:#cdc7b8;
   --k-content:#2a2926;--k-tools:#75726a;--k-caches:#d3cec0;--k-system:#e3ded2;
   --t-content:#f4f1e9;--t-tools:#f4f1e9;--t-caches:#2a2926;--t-system:#75726a;
-  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC",system-ui,sans-serif;
-  --mono:ui-monospace,"SF Mono",Menlo,monospace;color-scheme:light;
+  color-scheme:light;
 }
+@media (max-width:719px){:root{--display:72px;--unit:36px;--h1:40px;--h2:26px;--body:17px;--label:14px}}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--ground);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:var(--g);color:var(--ink);font:400 var(--body)/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px;border-radius:6px}
-.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
-nav{display:flex;align-items:center;gap:22px;height:64px;font-size:14px}
-nav b{font-weight:600;font-size:16px;flex:1;display:flex;align-items:center;gap:10px}
-nav b img{width:26px;height:26px}
-nav a{text-decoration:none;color:var(--muted)} nav a:hover{color:var(--ink)}
-#lang{color:var(--muted);font-size:14px} #lang:hover{color:var(--ink)}
-.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:40px;align-items:center;min-height:calc(100vh - 64px);max-height:900px;padding-bottom:40px}
-h1{font-size:56px;line-height:1.08;font-weight:300;letter-spacing:-.025em;margin:0 0 20px;text-wrap:balance}
-.sub{font-size:20px;line-height:1.5;color:var(--muted);margin:0 0 32px;max-width:30em;text-wrap:pretty}
-.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
-.btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:10px;background:var(--ink);color:var(--on-ink);text-decoration:none;font-weight:500;font-size:16px;white-space:nowrap}
-.btn svg{width:17px;height:17px;fill:currentColor}
-.btn:hover{background:#000}
-.cmd{display:flex;align-items:center;gap:6px;height:48px;min-width:0;flex:1 1 300px;max-width:440px;border:1.25px solid var(--line);border-radius:10px;padding:0 6px 0 14px;font:12.5px var(--mono);background:var(--hover)}
-.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+:focus-visible{outline:1.5px solid var(--ink);outline-offset:3px}
+p{margin:0}
+.wrap{max-width:1264px;margin:0 auto;padding:0 32px}
+nav{display:flex;align-items:center;gap:24px;height:80px;font-size:var(--label);color:var(--mute)}
+.logo{flex:1;display:flex;align-items:center;gap:10px;font:600 var(--body)/1 var(--sans);color:var(--ink);text-decoration:none}
+.logo img{width:32px;height:32px;border-radius:8px}
+nav a.gh{text-decoration:none} nav a.gh:hover,#lang:hover{color:var(--ink)}
+h1{font:500 var(--h1)/1.1 var(--serif);letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1 span{display:block}
+h2{font:500 var(--h2)/1.2 var(--serif);margin:0 0 16px}
+.lab{font-size:var(--label);line-height:1.6;color:var(--mute)}
+/* A 居中：眉标 → 主体 12，主体 → 说明 16，上下留白 96 */
+.A{text-align:center;padding:96px 0}
+.A .eb{margin-bottom:12px}
+.A .cap{margin:16px auto 0;max-width:32em;text-wrap:pretty}
+.hero{padding:56px 0 56px}
+.hero .cap{max-width:34em}
+.cta{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:32px}
+.btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:12px;background:var(--ink);color:var(--g);font:600 var(--label)/1 var(--sans);text-decoration:none;white-space:nowrap}
+.btn svg{width:16px;height:19px;fill:currentColor}
+.btn:hover{opacity:.88}
+.cmd{display:flex;align-items:center;gap:12px;height:48px;width:420px;max-width:100%;border:1px solid var(--line);border-radius:12px;padding:0 16px;font:400 var(--label)/1 var(--mono);text-align:left}
+.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font:inherit}
 .cmd code::-webkit-scrollbar{display:none}
-.cmd button{font:500 14px var(--sans);padding:0 12px;height:34px;border-radius:7px}
-.cmd button:hover{background:var(--hover)}
-.cmdlabel{font-size:12.5px;color:var(--muted);margin:18px 0 6px}
-.meta{font-size:12.5px;color:var(--muted);margin-top:16px}
-#art{position:relative;width:100%;aspect-ratio:1.18;min-height:0}
-#art svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.cmd button{font:600 var(--label)/1 var(--sans)}
+.cmd button:hover{text-decoration:underline}
+.hero .lab{margin-top:16px}
+/* 卡片：视频、截图、卵石图共用 */
+.card{border-radius:28px;box-shadow:var(--shadow);background:var(--card);overflow:hidden}
+.card img{display:block;width:100%;height:100%;object-fit:cover}
+.video{position:relative;margin:0;aspect-ratio:16/9}
+.video video{display:block;width:100%;height:100%;object-fit:cover;background:var(--card)}
+/* 开关放右上角：900 高的窗口里首屏只露出视频上半截，开关也要看得见 */
+#snd{position:absolute;right:24px;top:24px;height:48px;padding:0 20px;border-radius:12px;background:rgba(42,41,37,.72);color:var(--g);font:600 var(--label)/1 var(--sans)}
+#snd:hover{background:var(--ink)}
+.credit{text-align:center;margin-top:16px}
+.credit a,footer a{text-decoration:none} .credit a:hover,footer a:hover{color:var(--ink)}
+/* 大数字：Inter 600，强调色只用在这里 */
+.num{font:600 var(--display)/1 var(--sans);letter-spacing:-.05em;color:var(--acc);margin:0}
+.num .u{font-size:var(--unit);letter-spacing:0;margin-left:.24em}
+/* B 分栏：文字 400 + 间距 60 + 画面槽 720×450；镜像只换左右 */
+.B{display:grid;grid-template-columns:minmax(0,400px) minmax(0,720px);gap:60px;justify-content:center;align-items:center;padding:96px 0}
+.B.m{grid-template-columns:minmax(0,720px) minmax(0,400px)}
+.B.m .slot{order:-1}
+.B.top{align-items:start}
+.txt .lab{margin-top:16px}
+.txt .lab+.lab{margin-top:4px}
+.slot{width:100%;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center}
+.slot>.card{width:100%;height:100%}
+.slot>.card.tall{width:auto;aspect-ratio:1240/904}
+.slot>.card.wide{height:auto;aspect-ratio:900/316}
+.first p{margin-bottom:12px}
+.first .lab{margin:0 0 8px}
+#art{position:relative}
+#art svg{position:absolute;inset:0;width:100%;height:100%}
 .it .c{transition:none}
 .it text{text-anchor:middle;pointer-events:none;fill:var(--tc);font-size:13px}
 .it .sz{font-weight:300}
@@ -54,65 +98,92 @@ h1{font-size:56px;line-height:1.08;font-weight:300;letter-spacing:-.025em;margin
 .k-free{--tc:var(--ink)}.k-free .c{fill:none}
 .rk{fill:none;stroke:var(--rake);stroke-width:1}
 .it.sel{--tc:var(--ink)}.it.sel .c{fill:var(--ground);stroke:var(--ink);stroke-width:2;stroke-dasharray:none}
-section{padding:72px 0;border-top:1px solid var(--line)}
-h2{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 28px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px}
-.grid h3{font-size:20px;font-weight:500;line-height:1.3;margin:0 0 10px}
-.grid p{margin:0;color:var(--muted)}
-.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;counter-reset:s;margin:0;padding:0;list-style:none}
-.steps li{counter-increment:s;font-size:20px;line-height:1.45}
-.steps li::before{content:counter(s);display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1.25px solid var(--ink);border-radius:50%;font-size:14px;margin-bottom:14px}
-.first{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
-.first p{margin:0 0 14px}
-.first .dim{color:var(--muted);font-size:14px}
-.shot{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line);background:#fff}
-footer{padding:32px 0 48px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
-@media (max-width:980px){.hero{grid-template-columns:minmax(0,1fr);min-height:0;max-height:none;padding-top:24px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}#art{aspect-ratio:1.3}}
-@media (max-width:640px){.wrap{padding:0 20px}h1{font-size:40px}.sub{font-size:16px}.grid,.steps,.first{grid-template-columns:minmax(0,1fr)}.cmd{flex-basis:100%;max-width:none}.btn{width:100%;justify-content:center}section{padding:52px 0}nav a.gh{display:none}}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:60px;max-width:1180px;margin:0 auto;padding:96px 0;text-align:center}
+.three h2{margin-bottom:12px}
+footer{border-top:1px solid var(--line);padding:32px 0 48px}
+footer p+p{margin-top:12px}
+/* 入场：滚到时上移 12→0 + 淡入，只放一次；减少动态时不做 */
+.anim .rv{opacity:0;transform:translateY(12px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
+.anim .rv.in{opacity:1;transform:none}
+@media (max-width:1100px){.B,.B.m{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:40px}.B.m{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}}
+@media (max-width:719px){
+  .wrap{padding:0 20px}
+  .A,.B,.three{padding:64px 0}
+  .hero{padding:32px 0 40px}
+  .B,.B.m{grid-template-columns:minmax(0,1fr);gap:32px}
+  .B.m .slot{order:0}
+  .three{grid-template-columns:minmax(0,1fr);gap:40px}
+  .btn{width:100%;justify-content:center}
+  .cmd{width:100%}
+  #snd{right:12px;top:12px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
- <nav><b><img src="icon.png" alt="">Rake</b><a class="gh" href="https://github.com/JonasJoe233/rake-mac">GitHub</a><button id="lang" type="button"></button></nav>
- <header class="hero">
-  <div>
-   <h1 data-t="site.h1"></h1>
-   <p class="sub" data-t="site.sub"></p>
-   <div class="cta">
-    <a class="btn" id="dl" href="https://github.com/JonasJoe233/rake-mac/releases/latest/download/Rake.dmg"><svg viewBox="0 0 17 20" aria-hidden="true"><path d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9C3.6 4.8 2 5.8 1.1 7.4c-1.9 3.2-.5 8 1.3 10.6.9 1.3 1.9 2.7 3.3 2.6 1.3-.1 1.8-.8 3.4-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.2-2.6 1-1.5 1.4-2.9 1.4-3-.1 0-2.9-1.1-3-4.4zM11.5 3c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3-1.5z"/></svg><span data-t="site.download"></span></a>
-   </div>
-   <div class="cmdlabel" data-t="site.curlLabel"></div>
-   <div class="cmd"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/JonasJoe233/rake-mac/main/install.sh | bash</code><button id="copy" type="button" data-t="site.copy"></button></div>
-   <div class="meta" id="meta"></div>
+ <nav><a class="logo" href="./"><img src="icon.png" alt="">Rake</a><a class="gh" href="https://github.com/JonasJoe233/rake-mac">GitHub</a><button id="lang" type="button"></button></nav>
+ <header class="A hero">
+  <h1 data-t="site.h1" data-lines></h1>
+  <p class="cap" data-t="site.sub"></p>
+  <div class="cta">
+   <a class="btn" id="dl" href="https://github.com/JonasJoe233/rake-mac/releases/latest/download/Rake.dmg"><svg viewBox="0 0 17 20" aria-hidden="true"><path id="apple" d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9C3.6 4.8 2 5.8 1.1 7.4c-1.9 3.2-.5 8 1.3 10.6.9 1.3 1.9 2.7 3.3 2.6 1.3-.1 1.8-.8 3.4-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.2-2.6 1-1.5 1.4-2.9 1.4-3-.1 0-2.9-1.1-3-4.4zM11.5 3c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3-1.5z"/></svg><span data-t="site.download"></span></a>
+   <div class="cmd" role="group" data-t-aria="site.curlLabel"><code id="cmd">curl -fsSL https://raw.githubusercontent.com/JonasJoe233/rake-mac/main/install.sh | bash</code><button id="copy" type="button" data-t="site.copy"></button></div>
   </div>
-  <div id="art" role="img"><svg id="svg"></svg></div>
+  <p class="lab" id="meta"></p>
  </header>
- <section>
-  <div class="grid">
-   <div><h3 data-t="site.f2.t"></h3><p data-t="site.f2.b"></p></div>
-   <div><h3 data-t="site.f3.t"></h3><p data-t="site.f3.b"></p></div>
-   <div><h3 data-t="site.f4.t"></h3><p data-t="site.f4.b"></p></div>
-   <div><h3 data-t="site.f1.t"></h3><p data-t="site.f1.b"></p></div>
+ <figure class="video card" id="video">
+  <video id="promo" src="rake.mp4" poster="poster.jpg" autoplay muted loop playsinline preload="metadata" data-t-aria="site.video.alt"></video>
+  <button id="snd" type="button" data-t="site.video.soundOn"></button>
+ </figure>
+ <script>/* 减少动态：不自动播放，只留海报和原生控件 */
+ if(matchMedia("(prefers-reduced-motion: reduce)").matches){const v=document.getElementById("promo");v.removeAttribute("autoplay");v.autoplay=false;v.pause();v.controls=true;document.getElementById("snd").hidden=true;}</script>
+ <p class="lab credit"><a href="http://creativecommons.org/licenses/by/4.0/" data-t="site.video.credit"></a></p>
+ <section class="A rv">
+  <p class="lab eb" data-t="site.pain.eb"></p>
+  <p class="num"><span class="n" data-t="site.pain.num"></span><span class="u" data-t="site.pain.unit"></span></p>
+  <p class="cap" data-t="site.pain.cap"></p>
+ </section>
+ <section class="B rv">
+  <div class="txt"><h2 data-t="site.see.h"></h2><p data-t="site.see.b"></p><p class="lab" data-t="site.see.dark"></p><p class="lab" data-t="site.see.light"></p></div>
+  <div class="slot"><div class="card" id="art" role="img"><svg id="svg"></svg></div></div>
+ </section>
+ <section class="B m rv">
+  <div class="txt"><h2 data-t="site.tick.h"></h2><p data-t="site.tick.b"></p><p class="lab" data-t="site.tick.lab"></p></div>
+  <div class="slot"><div class="card"><img src="b_sel.jpg" width="1440" height="900" loading="lazy" data-t-alt="site.tick.alt" alt=""></div></div>
+ </section>
+ <section class="B rv">
+  <div class="txt"><h2 data-t="site.check.h"></h2><p data-t="site.check.b"></p></div>
+  <div class="slot"><div class="card tall"><img src="review.jpg" width="1240" height="904" loading="lazy" data-t-alt="site.check.alt" alt=""></div></div>
+ </section>
+ <section class="A rv">
+  <p class="lab eb" data-t="site.result.eb"></p>
+  <p class="num"><span class="n" data-t="site.result.num"></span><span class="u" data-t="site.result.unit"></span></p>
+  <p class="cap" data-t="site.result.cap"></p>
+ </section>
+ <section class="three rv">
+  <div><h2 data-t="site.three.offline.h"></h2><p data-t="site.three.offline.b"></p></div>
+  <div><h2 data-t="site.three.free.h"></h2><p data-t="site.three.free.b"></p></div>
+  <div><h2 data-t="site.three.open.h"></h2><p data-t="site.three.open.b"></p></div>
+ </section>
+ <section class="B m top first rv" id="first">
+  <div class="txt">
+   <h2 data-t="site.first.t"></h2>
+   <p data-t="site.first.b1"></p>
+   <p data-t="site.first.b2"></p>
+   <p data-t="site.first.b3"></p>
+   <p class="lab" data-t="site.first.curl"></p>
+   <p class="lab" data-t="site.first.perm"></p>
   </div>
+  <div class="slot"><div class="card wide"><img src="gatekeeper.jpg" width="900" height="316" loading="lazy" data-t-alt="site.first.shotAlt" alt=""></div></div>
  </section>
- <section>
-  <h2 data-t="site.how.t"></h2>
-  <ol class="steps"><li data-t="site.how.1"></li><li data-t="site.how.2"></li><li data-t="site.how.3"></li></ol>
+ <section class="A rv">
+  <h1 data-t="site.h1" data-lines></h1>
+  <div class="cta"><a class="btn" href="https://github.com/JonasJoe233/rake-mac/releases/latest/download/Rake.dmg"><svg viewBox="0 0 17 20" aria-hidden="true"><use href="#apple"/></svg><span data-t="site.download"></span></a></div>
  </section>
- <section id="first">
-  <h2 data-t="site.first.t"></h2>
-  <div class="first">
-   <div>
-    <p data-t="site.first.b1"></p>
-    <p data-t="site.first.b2"></p>
-    <p data-t="site.first.b3"></p>
-    <p class="dim" data-t="site.first.curl"></p>
-    <p class="dim" data-t="site.first.perm"></p>
-   </div>
-   <img class="shot" src="gatekeeper.jpg" width="900" height="316" loading="lazy" data-t-alt="site.first.shotAlt" alt="">
-  </div>
- </section>
- <footer><a href="https://github.com/JonasJoe233/rake-mac" data-t="site.footer"></a></footer>
+ <footer class="lab">
+  <p><a href="https://github.com/JonasJoe233/rake-mac" data-t="site.footer"></a></p>
+  <p>"Werq" Kevin MacLeod (incompetech.com)<br>Licensed under Creative Commons: By Attribution 4.0 License<br><a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
+ </footer>
 </div>
 <script src="pebbles.js"></script>
 <script src="site.js"></script>

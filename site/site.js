@@ -1,6 +1,7 @@
-/* 官网：文案来自 strings.json（和 App 同一份），首屏卵石图用 pebbles.js 现场画 */
+/* 官网：文案来自 strings.json（和 App 同一份），See it. 一段的卵石图用 pebbles.js 现场画 */
 let DICT={}, LANG="en", VERSION="0.1.0";
 const $=s=>document.querySelector(s);
+const REDUCE=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function T(k,v){let s=(DICT[LANG]&&DICT[LANG][k])||(DICT.en&&DICT.en[k])||k; for(const n in (v||{})) s=s.split("{"+n+"}").join(v[n]); return s;}
 function pickLang(){
   const q=new URLSearchParams(location.search).get("lang"); if(q&&DICT[q]) return q;
@@ -13,18 +14,21 @@ function applyText(){
   document.querySelector('meta[name="description"]').setAttribute("content",T("site.description"));
   document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T(e.dataset.t));
   document.querySelectorAll("[data-t-alt]").forEach(e=>e.alt=T(e.dataset.tAlt));
+  document.querySelectorAll("[data-t-aria]").forEach(e=>e.setAttribute("aria-label",T(e.dataset.tAria)));
+  // 标语按句换行：英文两句两行，中文一句一行
+  document.querySelectorAll("[data-lines]").forEach(e=>{e.textContent=""; T(e.dataset.t).split(/(?<=[.!?])\s+/).forEach(s=>{const p=document.createElement("span"); p.textContent=s; e.appendChild(p);});});
   $("#meta").textContent=T("site.meta",{v:VERSION});
   $("#lang").textContent=LANG==="en"?"中文":"English";
-  $("#art").setAttribute("aria-label",T("site.f3.t"));
+  $("#art").setAttribute("aria-label",T("site.see.b"));
 }
-$("#lang").onclick=()=>{LANG=LANG==="en"?"zh-Hans":"en"; try{localStorage.setItem("rake-lang",LANG);}catch(e){} applyText(); draw(1);};
+$("#lang").onclick=()=>{LANG=LANG==="en"?"zh-Hans":"en"; try{localStorage.setItem("rake-lang",LANG);}catch(e){} applyText(); if(PLAYED) draw(1);};
 $("#copy").onclick=async()=>{
   const b=$("#copy");
   try{await navigator.clipboard.writeText($("#cmd").textContent);}catch(e){const r=document.createRange(); r.selectNodeContents($("#cmd")); getSelection().removeAllRanges(); getSelection().addRange(r);}
   b.textContent=T("site.copied"); setTimeout(()=>b.textContent=T("site.copy"),1600);
 };
 
-/* ===== 首屏动画：一整块裂成卵石，几块缓存被选中，变成耙纹 ===== */
+/* ===== 卵石动画：一整块裂成卵石，几块缓存被选中，变成耙纹。滚到 See it. 才开始 ===== */
 const PICKED=["upd","npm","brew","ext","pip"];
 let STONES=[], L=null, SIZE="";
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
@@ -76,9 +80,40 @@ function play(){
   const step=now=>{const p=clamp((now-t0)/D); draw(p); if(p<1) requestAnimationFrame(step);};
   requestAnimationFrame(step);
 }
-let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>draw(1),150);});
+let PLAYED=false;
+function watchArt(){
+  const go=()=>{PLAYED=true; play();};
+  if(!("IntersectionObserver" in window)) return go();
+  const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect(); go();}},{threshold:.35});
+  io.observe($("#art"));
+}
+let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>{if(PLAYED) draw(1);},150);});
+
+/* ===== 视频：静音自动播放；点声音开关取消静音并从 0 秒播；滚出视口暂停，回来再播 ===== */
+const V=$("#promo"), SND=$("#snd");
+let VIS=false, RESUME=!REDUCE;
+SND.onclick=()=>{
+  if(V.muted){V.muted=false; V.currentTime=0; V.play().catch(()=>{}); SND.dataset.t="site.video.soundOff";}
+  else{V.muted=true; SND.dataset.t="site.video.soundOn";}
+  SND.textContent=T(SND.dataset.t);
+};
+if("IntersectionObserver" in window){
+  new IntersectionObserver(([e])=>{
+    VIS=e.isIntersecting;
+    if(!VIS){if(!V.paused) RESUME=true; V.pause();}
+    else if(RESUME){RESUME=false; V.play().catch(()=>{});}
+  },{threshold:.25}).observe(V);
+  V.addEventListener("play",()=>{if(!VIS){V.pause(); RESUME=true;}}); // 自动播放晚于观察回调时，屏外也别播
+}
+
+/* ===== 入场：滚到时上移 + 淡入，只放一次（html.anim 在减少动态时不加） ===== */
+if(document.documentElement.classList.contains("anim")){
+  const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in"); ro.unobserve(e.target);}}),{rootMargin:"0px 0px -8% 0px"});
+  document.querySelectorAll(".rv").forEach(e=>ro.observe(e));
+}
+
 (async()=>{
   try{DICT=await (await fetch("strings.json")).json();}catch(e){DICT={};}
   try{VERSION=(await (await fetch("version.txt")).text()).trim()||VERSION;}catch(e){}
-  LANG=pickLang(); applyText(); play();
+  LANG=pickLang(); applyText(); watchArt();
 })();

@@ -31,3 +31,14 @@ Third-party code
 None. Rake uses only Apple system frameworks (Foundation, SwiftUI, AppKit,
 WebKit) and the Swift standard library. Tests use swift-testing, which ships
 with the Swift toolchain.
+
+Fonts (website only)
+--------------------
+site/fonts/inter.woff2: Inter 4.001 by The Inter Project Authors, SIL Open Font License 1.1 (site/fonts/OFL-Inter.txt).
+site/fonts/lora.woff2: Lora 3.008 by The Lora Project Authors, Latin subset, SIL Open Font License 1.1 (site/fonts/OFL-Lora.txt).
+
+Music (promo video site/rake.mp4)
+---------------------------------
+"Werq" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/

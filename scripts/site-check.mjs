@@ -43,7 +43,11 @@ for (const lang of ["en", "zh-Hans"]) {
     await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 2, mobile });
     await send("Emulation.setUserAgentOverride", { userAgent: "Mozilla/5.0", acceptLanguage: lang === "en" ? "en-US" : "zh-CN", platform: "MacIntel" });
     await send("Page.navigate", { url: url + (url.includes("?") ? "&" : "?") + "lang=" + lang });
-    await sleep(4500);  // 首屏动画 3.2 秒，等它画完
+    await sleep(1500);
+    // 卵石图在 See it. 段，滚到才开始画（3.2 秒）；入场动画也要滚到才触发。逐屏滚一遍再回顶部
+    await send("Runtime.evaluate", { awaitPromise: true, expression: `(async () => { const s = ms => new Promise(r => setTimeout(r, ms));
+      for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight / 2) { scrollTo(0, y); await s(120); }
+      document.querySelector("#art").scrollIntoView({ block: "center" }); await s(4000); scrollTo(0, 0); await s(600); })()` });
     const m = await send("Runtime.evaluate", { returnByValue: true, expression: `(() => {
       const de = document.documentElement, vw = de.clientWidth, bad = [];
       document.querySelectorAll("body *").forEach(e => { const r = e.getBoundingClientRect();
