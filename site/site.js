@@ -93,20 +93,57 @@ function watchArt(){
 let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>{if(PLAYED) draw(1);},150);});
 
 /* ===== 视频：静音自动播放；点声音开关取消静音并从 0 秒播；滚出视口暂停，回来再播 ===== */
-const V=$("#promo"), SND=$("#snd");
-let VIS=false, RESUME=!REDUCE;
+const V=$("#promo"), SND=$("#snd"), PLAY=$("#play");
+let VIS=false, RESUME=!REDUCE, STARTED=false;
 SND.onclick=()=>{
   if(V.muted){V.muted=false; V.currentTime=0; V.play().catch(()=>{}); SND.dataset.t="site.video.soundOff";}
   else{V.muted=true; SND.dataset.t="site.video.soundOn";}
   SND.textContent=T(SND.dataset.t);
 };
+// 自动播放被拦（低电量模式、省流量、App 内置浏览器）时给播放按钮和原生控件，不然只剩一张海报
+function fallback(){if(REDUCE||!V.paused) return; V.controls=true; PLAY.hidden=false;}
+function tryPlay(){
+  const t=setTimeout(()=>{if(!STARTED) fallback();},1500);
+  V.play().catch(e=>{if(e&&e.name==="NotAllowedError"){clearTimeout(t); fallback();}});
+}
+V.addEventListener("playing",()=>{STARTED=true; PLAY.hidden=true;});
+// 点击算用户手势，照样静音，声音只归开关管
+PLAY.onclick=()=>{RESUME=false; V.play().catch(()=>{});};
+if(!REDUCE) V.addEventListener("click",e=>{
+  if(V.controls&&e.offsetY>V.clientHeight-56) return; // 原生控件条（进度、音量）留给浏览器
+  // 开着原生控件时，桌面浏览器自己会切播放；等它处理完再看，状态没变才由这里切
+  const was=V.paused;
+  setTimeout(()=>{if(V.paused===was){if(V.paused) V.play().catch(()=>{}); else V.pause();} PLAY.hidden=!V.paused;},0); // 停下时留个播放按钮，看得出是暂停而不是海报
+});
 if("IntersectionObserver" in window){
   new IntersectionObserver(([e])=>{
     VIS=e.isIntersecting;
     if(!VIS){if(!V.paused) RESUME=true; V.pause();}
-    else if(RESUME){RESUME=false; V.play().catch(()=>{});}
+    else if(RESUME){RESUME=false; tryPlay();}
   },{threshold:.25}).observe(V);
   V.addEventListener("play",()=>{if(!VIS){V.pause(); RESUME=true;}}); // 自动播放晚于观察回调时，屏外也别播
+}else if(!REDUCE){VIS=true; tryPlay();}
+
+/* ===== 手机下载：dmg 在手机上打不开，按钮改成把官网链接带到 Mac 上（分享，或者复制） ===== */
+if(document.documentElement.classList.contains("nomac")){
+  const URL_=document.querySelector('meta[property="og:url"]').content;
+  const copy=async s=>{
+    try{await navigator.clipboard.writeText(s); return true;}catch(e){}
+    const a=document.createElement("textarea"); a.value=s; a.readOnly=true; a.style.cssText="position:fixed;opacity:0"; document.body.appendChild(a); a.select();
+    let ok=false; try{ok=document.execCommand("copy");}catch(e){} a.remove(); return ok;
+  };
+  document.querySelectorAll(".btn").forEach(b=>{
+    const s=b.querySelector("span"); s.dataset.t="site.downloadOnMac"; s.setAttribute("aria-live","polite");
+    b.onclick=async ev=>{
+      ev.preventDefault();
+      if(navigator.share){
+        try{await navigator.share({title:T("site.title"),url:URL_}); return;}catch(e){if(e&&e.name==="AbortError") return;}
+      }
+      // 复制也失败时（个别内置浏览器），把链接直接写在按钮上
+      s.textContent=(await copy(URL_))?T("site.linkCopied"):URL_;
+      clearTimeout(b._t); b._t=setTimeout(()=>s.textContent=T(s.dataset.t),2400);
+    };
+  });
 }
 
 /* ===== 入场：滚到时上移 + 淡入，只放一次（html.anim 在减少动态时不加） ===== */

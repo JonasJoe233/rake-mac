@@ -15,7 +15,9 @@
 <link rel="icon" href="icon.png">
 <link rel="preload" href="fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/lora.woff2" as="font" type="font/woff2" crossorigin>
-<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&"IntersectionObserver" in window)document.documentElement.classList.add("anim");</script>
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&"IntersectionObserver" in window)document.documentElement.classList.add("anim");
+/* 触屏且不是 Mac 的设备（手机、平板，含伪装成 Mac 的 iPad 桌面模式）打不开 dmg。真 Mac 没有触屏，maxTouchPoints 是 0 */
+if(matchMedia("(pointer:coarse)").matches&&!(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints===0))document.documentElement.classList.add("nomac");</script>
 <style>
 /* 和宣传片同一套版式：Lora 500 说话，Inter 报数。字体自托管在 fonts/，不连第三方。
    字号只有 6 档（视频字号 ÷2）：110 大数字 / 55 单位 / 60 H1 / 32 H2 / 20 正文 / 15 标签；<720 宽换成 72 / 36 / 40 / 26 / 17 / 14。
@@ -66,14 +68,23 @@ h2{font:500 var(--h2)/1.2 var(--serif);margin:0 0 16px}
 .cmd button{font:600 var(--label)/1 var(--sans)}
 .cmd button:hover{text-decoration:underline}
 .hero .lab{margin-top:16px}
+#meta{text-wrap:balance}
 /* 卡片：视频、截图、卵石图共用 */
 .card{border-radius:28px;box-shadow:var(--shadow);background:var(--card);overflow:hidden}
 .card img{display:block;width:100%;height:100%;object-fit:cover}
 .video{position:relative;margin:0;aspect-ratio:16/9}
-.video video{display:block;width:100%;height:100%;object-fit:cover;background:var(--card)}
+/* contain：载入后宽度跨档（如手机转横屏），另一种比例的片子也完整显示，留边和卡片同色 */
+.video video{display:block;width:100%;height:100%;object-fit:contain;background:var(--card)}
 /* 开关放右上角：900 高的窗口里首屏只露出视频上半截，开关也要看得见 */
 #snd{position:absolute;right:24px;top:24px;height:48px;padding:0 20px;border-radius:12px;background:rgba(42,41,37,.72);color:var(--g);font:600 var(--label)/1 var(--sans)}
 #snd:hover{background:var(--ink)}
+/* 自动播放被拦时才出现：控件尺寸、圆角和声音开关同一套 */
+#play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:12px;background:rgba(42,41,37,.72);color:var(--g);display:flex;align-items:center;justify-content:center}
+#play[hidden]{display:none}
+#play svg{width:20px;height:22px;fill:currentColor;margin-left:3px}
+#play:hover{background:var(--ink)}
+/* 手机和平板装不了 dmg：curl 框不显示，下载按钮改成把链接带到 Mac 上 */
+.nomac .cmd{display:none}
 .credit{text-align:center;margin-top:16px}
 .credit a,footer a{text-decoration:none} .credit a:hover,footer a:hover{color:var(--ink)}
 /* 大数字：Inter 600，强调色只用在这里 */
@@ -122,7 +133,8 @@ footer p+p{margin-top:12px}
   .three{grid-template-columns:minmax(0,1fr);gap:40px}
   .btn{width:100%;justify-content:center}
   .cmd{width:100%}
-  #snd{right:12px;top:12px}
+  .video{aspect-ratio:1/1}
+  #snd{right:12px;top:12px;height:36px;padding:0 14px}
 }
 </style>
 </head>
@@ -139,11 +151,17 @@ footer p+p{margin-top:12px}
   <p class="lab" id="meta"></p>
  </header>
  <figure class="video card" id="video">
-  <video id="promo" src="rake.mp4" poster="poster.jpg" autoplay muted loop playsinline preload="metadata" data-t-aria="site.video.alt"></video>
+  <video id="promo" autoplay muted loop playsinline preload="metadata" data-t-aria="site.video.alt">
+   <source src="rake_sq.mp4" type="video/mp4" media="(max-width:719px)">
+   <source src="rake.mp4" type="video/mp4">
+  </video>
+  <button id="play" type="button" hidden data-t-aria="site.video.play"><svg viewBox="0 0 20 22" aria-hidden="true"><path d="M2 1.5v19L19 11z"/></svg></button>
   <button id="snd" type="button" data-t="site.video.soundOn"></button>
  </figure>
- <script>/* 减少动态：不自动播放，只留海报和原生控件 */
- if(matchMedia("(prefers-reduced-motion: reduce)").matches){const v=document.getElementById("promo");v.removeAttribute("autoplay");v.autoplay=false;v.pause();v.controls=true;document.getElementById("snd").hidden=true;}</script>
+ <script>/* <source media> 只在载入时选一次。海报和描述跟着载入时的宽度走，之后宽度跨档也不换，免得和正在放的那一版对不上 */
+ {const v=document.getElementById("promo"),sq=matchMedia("(max-width:719px)").matches;v.poster=sq?"poster_sq.jpg":"poster.jpg";if(sq)v.dataset.tAria="site.video.altSq";
+ /* 减少动态：不自动播放，只留海报和原生控件 */
+ if(matchMedia("(prefers-reduced-motion: reduce)").matches){v.removeAttribute("autoplay");v.autoplay=false;v.pause();v.controls=true;document.getElementById("snd").hidden=true;}}</script>
  <p class="lab credit"><a href="http://creativecommons.org/licenses/by/4.0/" data-t="site.video.credit"></a></p>
  <section class="A rv">
   <p class="lab eb" data-t="site.pain.eb"></p>
