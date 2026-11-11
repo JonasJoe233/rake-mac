@@ -8,6 +8,21 @@ function pickLang(){
   try{const s=localStorage.getItem("rake-lang"); if(s&&DICT[s]) return s;}catch(e){}
   return /^zh/i.test(navigator.language||"")?"zh-Hans":"en";  // 浏览器首选语言是中文就用简体中文
 }
+// 中文没有空格，浏览器会在任意两字之间折行，把「去哪了」「放心」拆开。这里列出允许折行的位置（每块开头的前缀），文案改了对不上就整句不分
+const WRAP={"zh-Hans":{"site.h1":["先看清空间"]}};
+// 只在窄屏插 <wbr>：宽屏一行放得下，拆成两段文字会让前半段有亚像素偏移
+const NARROW=matchMedia("(max-width:719px)");
+function segs(k,s){
+  const w=NARROW.matches&&(WRAP[LANG]||{})[k]; if(!w) return [s];
+  const out=[]; let r=s;
+  for(const p of w){if(!r.startsWith(p)||r===p) return [s]; out.push(p); r=r.slice(p.length);}
+  out.push(r); return out;
+}
+// 标语按句换行：英文两句两行，中文一句一行。中文句内按 WRAP 插 <wbr>，窄屏只在这些位置折
+function splitLines(){
+  document.querySelectorAll("[data-lines]").forEach(e=>{e.textContent=""; T(e.dataset.t).split(/(?<=[.!?])\s+/).forEach(s=>{const p=document.createElement("span"); segs(e.dataset.t,s).forEach((t,i)=>{if(i) p.appendChild(document.createElement("wbr")); p.appendChild(document.createTextNode(t));}); e.appendChild(p);});});
+}
+NARROW.addEventListener("change",()=>{if(DICT.en) splitLines();}); // 文案还没载入时不动
 function applyText(){
   document.documentElement.lang=LANG;
   document.title=T("site.title");
@@ -18,8 +33,7 @@ function applyText(){
   document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T(e.dataset.t));
   document.querySelectorAll("[data-t-alt]").forEach(e=>e.alt=T(e.dataset.tAlt));
   document.querySelectorAll("[data-t-aria]").forEach(e=>e.setAttribute("aria-label",T(e.dataset.tAria)));
-  // 标语按句换行：英文两句两行，中文一句一行
-  document.querySelectorAll("[data-lines]").forEach(e=>{e.textContent=""; T(e.dataset.t).split(/(?<=[.!?])\s+/).forEach(s=>{const p=document.createElement("span"); p.textContent=s; e.appendChild(p);});});
+  splitLines();
   $("#meta").textContent=T("site.meta",{v:VERSION});
   $("#lang").textContent=LANG==="en"?"中文":"English";
   $("#art").setAttribute("aria-label",T("site.see.b"));
@@ -100,8 +114,8 @@ SND.onclick=()=>{
   else{V.muted=true; SND.dataset.t="site.video.soundOn";}
   SND.textContent=T(SND.dataset.t);
 };
-// 自动播放被拦（低电量模式、省流量、App 内置浏览器）时给播放按钮和原生控件，不然只剩一张海报
-function fallback(){if(REDUCE||!V.paused) return; V.controls=true; PLAY.hidden=false;}
+// 自动播放被拦（低电量模式、省流量、App 内置浏览器）时给中间的播放按钮，不然只剩一张海报。不开原生控件：控件条的渐变会压住片子底部
+function fallback(){if(REDUCE||!V.paused) return; PLAY.hidden=false;}
 function tryPlay(){
   const t=setTimeout(()=>{if(!STARTED) fallback();},1500);
   V.play().catch(e=>{if(e&&e.name==="NotAllowedError"){clearTimeout(t); fallback();}});
@@ -109,11 +123,10 @@ function tryPlay(){
 V.addEventListener("playing",()=>{STARTED=true; PLAY.hidden=true;});
 // 点击算用户手势，照样静音，声音只归开关管
 PLAY.onclick=()=>{RESUME=false; V.play().catch(()=>{});};
-if(!REDUCE) V.addEventListener("click",e=>{
-  if(V.controls&&e.offsetY>V.clientHeight-56) return; // 原生控件条（进度、音量）留给浏览器
-  // 开着原生控件时，桌面浏览器自己会切播放；等它处理完再看，状态没变才由这里切
-  const was=V.paused;
-  setTimeout(()=>{if(V.paused===was){if(V.paused) V.play().catch(()=>{}); else V.pause();} PLAY.hidden=!V.paused;},0); // 停下时留个播放按钮，看得出是暂停而不是海报
+// 点视频切换播放和暂停。停下时留个播放按钮，看得出是暂停而不是海报
+if(!REDUCE) V.addEventListener("click",()=>{
+  if(V.paused){RESUME=false; V.play().catch(()=>{PLAY.hidden=false;});}
+  else{V.pause(); PLAY.hidden=false;}
 });
 if("IntersectionObserver" in window){
   new IntersectionObserver(([e])=>{
