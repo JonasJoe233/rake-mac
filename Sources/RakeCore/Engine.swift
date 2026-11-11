@@ -4,7 +4,7 @@ public struct EngineConfig {
     public var home: String
     public var stateDir: String
     public var strings: Strings
-    public var rules: [Rule] = Rules.standard
+    public var rules: [Rule] = Rules.standard + Rules.manual
     public var keep: [Guard.Keep] = Guard.standardKeep
     public var scanSystem = true
     public var volumes: () -> VolumeInfo = VolumeInfo.live

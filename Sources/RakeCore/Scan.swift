@@ -20,9 +20,8 @@ extension Engine {
                          "Library/Containers/com.tinyspeck.slackmacgap", "Library/Application Support/discord",
                          "Library/Application Support/LarkShell", "Library/Containers/com.bytedance.macos.feishu",
                          "Library/Group Containers/*.feishu")
-        let llm = ctx.g(".cache/huggingface", ".ollama", ".lmstudio", ".cache/lm-studio")
         let trashDir = h(".Trash")
-        let interesting = Set(found.values.joined()).union(chat).union(llm).union([trashDir])
+        let interesting = Set(found.values.joined()).union(chat).union([trashDir])
 
         // 1. 量：主目录一级、~/Library 一级分别开 fts 并行；系统目录只要总量
         let top = ((try? fm.contentsOfDirectory(atPath: home)) ?? []).sorted().map { h($0) }
@@ -65,7 +64,6 @@ extension Engine {
                 cmd: s.t("rule.trash.cmd"), label: s.t("rule.trash.label"))
         }
         add("chat", .content, chat.map { ($0, size($0)) }, why: s.t("why.chat"))
-        add("llm", .tools, llm.map { ($0, size($0)) }, why: s.t("why.llm"))
         let v = config.volumes()
         if config.scanSystem {
             add("apps", .tools, [], why: s.t("why.apps"), bytes: (sizes["/Applications"] ?? 0) + size(h("Applications")))

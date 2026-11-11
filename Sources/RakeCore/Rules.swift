@@ -53,6 +53,24 @@ public enum Rules {
         },
     ]
 
+    /// manual 档：只认出来、量大小、写说明，不发删除 token。删了会不会丢东西还没查清的放这里。
+    public static let manual: [Rule] = [
+        // 桌面 AI Agent 在本机建的虚拟机。bundle 里除了系统镜像还有一块会话数据盘，删了丢什么还没查清
+        Rule(id: "agentvm", tier: .manual, kind: .tools) { c in
+            c.exists("Library/Application Support/Claude/vm_bundles") + c.exists("Library/Application Support/Claude-3p/vm_bundles")
+        },
+        // 桌面 AI 应用的下载缓存和运行时
+        Rule(id: "agentcache", tier: .manual, kind: .caches) { c in
+            c.exists("Library/Caches/Doubao") + c.exists("Library/Application Support/Doubao/gecko_cache")
+                + c.exists(".cache/codex-runtimes")
+        },
+        // 本地模型。Ollama、LM Studio 只认 models 子目录：主目录一级的点目录过不了 Guard
+        Rule(id: "llm", tier: .manual, kind: .tools) { c in
+            c.exists(".cache/huggingface") + c.exists(".ollama/models") + c.exists(".lmstudio/models")
+                + c.exists(".cache/lm-studio/models")
+        },
+    ]
+
     /// 编辑器扩展目录里，已被新版本替代、extensions.json 不再引用的旧版本。手装的孤儿不动。
     static func orphanExtensions(_ c: RuleContext) -> [String] {
         var out: [String] = []
