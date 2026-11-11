@@ -12,6 +12,9 @@ function applyText(){
   document.documentElement.lang=LANG;
   document.title=T("site.title");
   document.querySelector('meta[name="description"]').setAttribute("content",T("site.description"));
+  // og 标签和 title、description 同源。抓取方不跑脚本，读的是 index.html 里写好的英文值
+  document.querySelector('meta[property="og:title"]').setAttribute("content",T("site.title"));
+  document.querySelector('meta[property="og:description"]').setAttribute("content",T("site.description"));
   document.querySelectorAll("[data-t]").forEach(e=>e.textContent=T(e.dataset.t));
   document.querySelectorAll("[data-t-alt]").forEach(e=>e.alt=T(e.dataset.tAlt));
   document.querySelectorAll("[data-t-aria]").forEach(e=>e.setAttribute("aria-label",T(e.dataset.tAria)));
