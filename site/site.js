@@ -51,42 +51,82 @@ let STONES=[];
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 const clamp=t=>Math.max(0,Math.min(1,t));
 function textW(s,px){let w=0;for(const ch of s)w+=/[　-鿿＀-￯]/.test(ch)?px:px*.56;return w;}
-const G=v=>v<=0?"0 M":v<0.095?Math.max(1,Math.round(v*1024))+" M":(v>=10?v.toFixed(0):v.toFixed(1))+" G";
+// 官网的标签和清单同一个单位：GB / MB。数字和单位之间用不换行空格
+const NB="\u00a0", G=v=>v<=0?"0"+NB+"MB":v<0.095?Math.max(1,Math.round(v*1024))+NB+"MB":(v>=10?v.toFixed(0):v.toFixed(1))+NB+"GB";
 // layout 只和尺寸有关（和语言无关），按尺寸缓存。手机上两节的图一样大，算一次两节共用
 const LAYOUTS=new Map();
 function layoutFor(W,H){const k=W+"x"+H; if(!LAYOUTS.has(k)) LAYOUTS.set(k,layout(STONES,W,H)); return LAYOUTS.get(k);}
 function boxOf(e){const b=e.getBoundingClientRect(); return [Math.max(200,Math.round(b.width)),Math.max(160,Math.round(b.height))];}
-function label(g,P,s,on,op){
-  const xs=P.map(q=>q[0]), ys=P.map(q=>q[1]), bw=Math.max(...xs)-Math.min(...xs), bh=Math.max(...ys)-Math.min(...ys);
-  const [cx,cy]=centroid(P), sz=G(s.size), px=13, glyph=PICK(s.tier)&&!on?16:0;
-  const t=el("g",{opacity:op},g);
-  if(bw*.8>textW(s.label,px)+glyph+12&&bh>46){
-    el("text",{x:cx+glyph/2,y:cy-2},t).textContent=s.label;
-    el("text",{x:cx,y:cy+16,class:"sz"},t).textContent=sz;
-    if(glyph) mark(t,cx-textW(s.label,px)/2-glyph/2+2,cy-6.5,s.tier);
-  }else if(bw*.8>textW(sz,px)+8&&bh>24){
-    el("text",{x:cx,y:cy+5,class:"sz"},t).textContent=sz;
+// 圆角路径的折线近似（采样点都在 rounded() 画出的曲线上）。曲线是凸的，点在这条折线里就一定在曲线里
+function roundedPts(p,R){
+  const n=p.length, out=[]; if(n<3) return out;
+  for(let i=0;i<n;i++){
+    const A=p[(i-1+n)%n],B=p[i],C=p[(i+1)%n];
+    const l1=Math.hypot(B[0]-A[0],B[1]-A[1]), l2=Math.hypot(C[0]-B[0],C[1]-B[1]), r=Math.min(R,l1*.45,l2*.45);
+    const p1=[B[0]+(A[0]-B[0])*r/(l1||1),B[1]+(A[1]-B[1])*r/(l1||1)], p2=[B[0]+(C[0]-B[0])*r/(l2||1),B[1]+(C[1]-B[1])*r/(l2||1)];
+    for(const t of [0,.25,.5,.75,1]){const u=1-t; out.push([u*u*p1[0]+2*u*t*B[0]+t*t*p2[0],u*u*p1[1]+2*u*t*B[1]+t*t*p2[1]]);}
   }
+  return out;
+}
+function inPoly(P,x,y){let c=false; for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j]; if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]) c=!c;} return c;}
+// 文字框的四角和中心
+const pts5=(b,m=0)=>[[b.x-m,b.y-m],[b.x+b.w+m,b.y-m],[b.x-m,b.y+b.h+m],[b.x+b.w+m,b.y+b.h+m],[b.x+b.w/2,b.y+b.h/2]];
+// 标签：full 名称 + 大小（+ 档位标记），size 只有大小
+function labelNodes(g,P,s,on,mode,op){
+  const [cx,cy]=centroid(P), px=13, glyph=PICK(s.tier)&&!on?16:0;
+  const t=el("g",{opacity:op},g);
+  if(mode==="full"){
+    el("text",{x:cx+glyph/2,y:cy-2},t).textContent=s.label;
+    el("text",{x:cx,y:cy+16,class:"sz"},t).textContent=G(s.size);
+    if(glyph) mark(t,cx-textW(s.label,px)/2-glyph/2+2,cy-6.5,s.tier);
+  }else el("text",{x:cx,y:cy+5,class:"sz"},t).textContent=G(s.size);
   return t;
 }
-// 选中的耙纹。pebbles.js 的 rakes() 按 App 的尺寸定了步长 8、面积下限 300，手机上的缓存块只有 300–900，一圈都画不出。
-// 这里沿用它的 insetConvex、rounded，只把步长按块的内切半径缩放
-function selRings(g,P){
-  const r=2*area(P)/perim(P), step=Math.max(2.5,Math.min(8,r/4.5));
-  let p=P; for(let k=0;k<4;k++){p=insetConvex(p,step); if(p.length<3||area(p)<40) break; el("path",{class:"rk",d:rounded(p,Math.max(3,radius(p)))},g);}
+// 放不放标签：先把候选标签都画出来，一次读完 getBBox（只排一次版），文字框 5 个点都在「石头内缩 4px」里才放；
+// 放不下全称就只放大小，再放不下就不放。结果按尺寸、语言、字体缓存，动画每帧只查表
+const FINAL=L=>L.P||(L.P=cells(L.sites,L.R,9).map(c=>mergeShort(c,16)));
+const usable=P=>P.length>=3&&area(P)>=40;
+let FONTV=0;
+function plansFor(svg,L){
+  const k=LANG+"|"+FONTV; L.plans=L.plans||{}; if(L.plans[k]) return L.plans[k];
+  const m=new Map(), P=FINAL(L), tmp=el("g",{class:"it",opacity:0},svg)/* 字号和居中对齐来自 .it text，量之前要带上 */, rows=[];
+  STONES.forEach((s,i)=>{if(!usable(P[i])) return; for(const on of PICKED.includes(s.id)?[false,true]:[false])
+    rows.push({i,on,s,room:roundedPts(insetConvex(P[i],4),Math.max(2,radius(P[i])-4))});});
+  for(const mode of ["full","size"]){
+    const left=rows.filter(r=>!r.done&&r.room.length>=3);
+    left.forEach(r=>r.t=labelNodes(tmp,P[r.i],r.s,r.on,mode,1));
+    left.forEach(r=>{const b=r.t.getBBox(); r.b={x:b.x,y:b.y,w:b.width,h:b.height};});
+    left.forEach(r=>{if(pts5(r.b).every(([x,y])=>inPoly(r.room,x,y))) r.done={mode,box:r.b};});
+    tmp.innerHTML="";
+  }
+  rows.forEach(r=>m.set(r.i+(r.on?"*":""),r.done||{mode:"none"}));
+  tmp.remove(); return L.plans[k]=m;
 }
+// 耙纹一圈圈往里收。块上有标签时，用遮罩在文字框（外扩 3px）里把线挖掉，线不压字，圈数不少
+function rings(g,P,step,max,minA,box){
+  let p=P; for(let k=0;k<max;k++){p=insetConvex(p,step); if(p.length<3||area(p)<minA) break; el("path",{class:"rk",d:rounded(p,Math.max(minA>=300?6:3,radius(p)))},g);}
+  if(!box||!g.firstChild) return;
+  const svg=g.ownerSVGElement, id=svg.id+"-m"+(svg.__m=(svg.__m||0)+1), m=el("mask",{id,maskUnits:"userSpaceOnUse"},g);
+  el("rect",{x:-1e4,y:-1e4,width:2e4,height:2e4,fill:"#fff"},m);
+  el("rect",{x:box.x-3,y:box.y-3,width:box.w+6,height:box.h+6,rx:4,fill:"#000"},m);
+  g.setAttribute("mask",`url(#${id})`);
+}
+// 可用空间的耙纹沿用 pebbles.js 的 rakes() 的步长 11、面积下限 300。
+// 选中的耙纹：rakes() 按 App 的尺寸定了步长 8，手机上的缓存块只有 300–900，一圈都画不出，这里按块的内切半径缩放步长
+const freeRings=(g,P,max,box)=>rings(g,P,11,max,300,box);
+const selRings=(g,P,box)=>{const r=2*area(P)/perim(P); rings(g,P,Math.max(2.5,Math.min(8,r/4.5)),4,40,box);};
 // 画出全部卵石，返回每块的节点，后面勾选时只改这一块
 function paint(svg,L,crack,labels,sel){
-  const out={}, cs=cells(L.sites,L.R,9*crack);
+  const out={}, cs=cells(L.sites,L.R,9*crack), plan=plansFor(svg,L);
   STONES.forEach((s,i)=>{
-    const P=mergeShort(cs[i],16); if(P.length<3||area(P)<40) return;
-    const on=!!sel&&sel.has(s.id);
+    const P=mergeShort(cs[i],16); if(!usable(P)) return;
+    const on=!!sel&&sel.has(s.id), pl=plan.get(i+(on?"*":""))||{mode:"none"};
     const g=el("g",{class:`it k-${s.kind}${on?" sel":""}`,opacity:crack},svg);
     el("path",{class:"c",d:rounded(P,radius(P))},g);
     const rk=el("g",{},g); // 耙纹放在标签下面
-    if(s.kind==="free") rakes(rk,P,11,Math.round(30*crack));
-    else if(on) selRings(rk,P);
-    out[s.id]={g,rk,P,s,t:labels>0?label(g,P,s,on,labels):null};
+    if(s.kind==="free") freeRings(rk,P,Math.round(30*crack),pl.box);
+    else if(on) selRings(rk,P,pl.box);
+    out[s.id]={g,rk,P,s,i,t:labels>0&&pl.mode!=="none"?labelNodes(g,P,s,on,pl.mode,labels):null};
   });
   return out;
 }
@@ -119,18 +159,21 @@ function watchArt(){
 /* ===== 「勾选」：卡片 35% 进入视口后，每 450ms 勾一行，对应石头描边、出耙纹，「已选」累加到 8.4 GB。只放一次 ===== */
 let TK=null, SUM=0, TW=null;
 const sumOf=sel=>STONES.filter(s=>sel.has(s.id)).reduce((a,s)=>a+s.size,0);
-function setSum(v){SUM=v; $("#tsum").textContent=T("site.tick.selected",{size:v.toFixed(1)+" GB"});}
+function setSum(v){SUM=v; $("#tsum").textContent=T("site.tick.selected",{size:v.toFixed(1)+NB+"GB"});}
 function tickRender(sel){
   STONES=demoStones(T);
   const [W,H]=boxOf($("#tick .map")), L=layoutFor(W,H), svg=$("#tsvg");
   svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.innerHTML="";
-  TK={key:W+"x"+H,o:paint(svg,L,1,1,sel),sel};
+  TK={key:W+"x"+H,o:paint(svg,L,1,1,sel),sel,plan:plansFor(svg,L)};
   document.querySelectorAll("#tick li").forEach(li=>li.classList.toggle("on",sel.has(li.dataset.id)));
   setSum(TW?SUM:sumOf(sel));
 }
 function tickOne(id){
   TK.sel.add(id); $(`#tick li[data-id="${id}"]`).classList.add("on");
-  const o=TK.o[id]; if(o){o.g.classList.add("sel"); selRings(o.rk,o.P); if(o.t){o.t.remove(); o.t=label(o.g,o.P,o.s,true,1);}}
+  const li=$(`#tick li[data-id="${id}"]`), o=TK.o[id], pl=TK.plan.get(o?o.i+"*":"")||{mode:"none"};
+  if(o){o.g.classList.add("sel"); selRings(o.rk,o.P,pl.box); if(o.t) o.t.remove(); o.t=pl.mode!=="none"?labelNodes(o.g,o.P,o.s,true,pl.mode,1):null;}
+  // 行和石头同时强调一下：行底色闪 300ms，石头描边 1 → 2。只在动画里做，减少动态时不走这里
+  [li,o&&o.g].forEach(e=>{if(!e) return; e.classList.remove("flash"); void e.getBoundingClientRect(); e.classList.add("flash"); setTimeout(()=>e.classList.remove("flash"),400);});
   // 数字补间 300ms，每帧只改一个文本节点
   const from=SUM, to=sumOf(TK.sel), t0=performance.now();
   TW={to}; const tw=TW;
@@ -160,6 +203,8 @@ function watchRev(){
     [...document.querySelectorAll("#rev .row"),$("#rev .act")].forEach((r,i)=>setTimeout(()=>r.classList.add("in"),i*250));}},{threshold:.35});
   io.observe($("#rev"));
 }
+// 自托管字体换上后文字宽度会变，标签要按新宽度重新判断
+if(document.fonts) document.fonts.ready.then(()=>{FONTV=1; if(PLAYED) draw(1); if(TK) tickRender(TK.sel);});
 let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>{
   if(PLAYED) draw(1);
   if(TK){const [W,H]=boxOf($("#tick .map")); if(TK.key!==W+"x"+H) tickRender(TK.sel);}

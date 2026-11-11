@@ -114,6 +114,13 @@ h2{font:500 var(--h2)/1.2 var(--serif);margin:0 0 16px}
 .tick .sum{margin-left:auto;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .tick li{display:flex;align-items:center;gap:10px;height:48px;border-bottom:1px solid var(--line)}
 .tick li:last-child{border-bottom:0}
+/* 打勾时的强调：行底色闪 300ms，石头描边 1 → 2。不加新颜色 */
+.tick li{position:relative;isolation:isolate}
+.tick li::before{content:"";position:absolute;inset:0 -8px;border-radius:8px;background:var(--k-system);opacity:0;z-index:-1}
+.tick li.flash::before{animation:rowflash .3s ease-out}
+@keyframes rowflash{0%,60%{opacity:1}to{opacity:0}}
+#tsvg .it.flash .c{animation:thick .3s ease-out}
+@keyframes thick{from{stroke-width:1}to{stroke-width:2}}
 .tick .nm{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tick .sz{color:var(--mute);white-space:nowrap;font-variant-numeric:tabular-nums}
 .tick .bx{flex:none;width:20px;height:20px;border-radius:8px;border:1.5px solid var(--ink);transition:background .2s}
@@ -130,10 +137,12 @@ h2{font:500 var(--h2)/1.2 var(--serif);margin:0 0 16px}
 .rev .t{font:600 var(--body)/1.3 var(--sans)}
 .rev .in{margin-top:8px}
 .rev .code{margin-top:20px;padding:16px;border-radius:12px;background:var(--k-system);font:400 var(--label)/1.6 var(--mono)}
-.rev .row{white-space:pre-wrap;overflow-wrap:anywhere}
+.rev .row{white-space:pre-wrap}
 .rev .row>span{display:block}
 .rev .m{display:inline-block} /* 处理方式整段换到下一行，不在括号中间断 */
-.rev .row .p{padding-left:2ch}
+/* 路径只在「/」后折行（每段一个 inline-block，段间是 <wbr>）。整段比一行还长时，段内才按任意位置断 */
+.rev .row .p{padding-left:2ch;overflow-wrap:normal;word-break:keep-all}
+.rev .sg{display:inline-block;max-width:100%;overflow-wrap:anywhere}
 .rev .row+.row{margin-top:12px}
 .rev .ex{margin-top:16px}
 .rev .act{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
@@ -177,6 +186,10 @@ footer p+p{margin-top:12px}
   .cmd{width:100%}
   .video{aspect-ratio:1/1}
   .rev{padding:24px 20px 20px}
+  /* 窄屏：大小只留在名称那一行，右对齐；处理方式另起一行；路径行不再重复大小 */
+  .rev .row .h{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1ch}
+  .rev .h .m{grid-column:1/-1}
+  .rev .ps{display:none}
   .tick li{height:44px}
   #snd{right:12px;top:12px;height:36px;padding:0 14px}
   /* 中文标语只在标点和 <wbr> 处折行（<wbr> 的位置见 site.js 的 WRAP），不拆「去哪了」 */
@@ -227,11 +240,11 @@ footer p+p{margin-top:12px}
    <div class="list" aria-hidden="true">
     <p class="hd"><span class="dot">●</span><span data-t="tier.auto"></span><span class="sum" id="tsum"></span></p>
     <ul>
-     <li data-id="upd"><span class="nm" data-t="rule.upd.label"></span><span class="sz">2.1 GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
-     <li data-id="npm"><span class="nm" data-t="rule.npm.label"></span><span class="sz">3.2 GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
-     <li data-id="brew"><span class="nm" data-t="rule.brew.label"></span><span class="sz">1.6 GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
-     <li data-id="ext"><span class="nm" data-t="rule.ext.label"></span><span class="sz">0.9 GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
-     <li data-id="pip"><span class="nm" data-t="rule.pip.label"></span><span class="sz">0.6 GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
+     <li data-id="upd"><span class="nm" data-t="rule.upd.label"></span><span class="sz">2.1&nbsp;GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
+     <li data-id="npm"><span class="nm" data-t="rule.npm.label"></span><span class="sz">3.2&nbsp;GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
+     <li data-id="brew"><span class="nm" data-t="rule.brew.label"></span><span class="sz">1.6&nbsp;GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
+     <li data-id="ext"><span class="nm" data-t="rule.ext.label"></span><span class="sz">0.9&nbsp;GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
+     <li data-id="pip"><span class="nm" data-t="rule.pip.label"></span><span class="sz">0.6&nbsp;GB</span><span class="bx"><svg viewBox="0 0 20 20"><path d="M5.5 10.5l3 3 6-7"/></svg></span></li>
     </ul>
    </div>
   </div></div>
@@ -240,16 +253,16 @@ footer p+p{margin-top:12px}
   <div class="txt"><h2 data-t="site.check.h"></h2><p data-t="site.check.b"></p></div>
   <div class="slot fit"><div class="card rev" id="rev">
    <p class="t" data-t="app.sheetConfirm"></p>
-   <p class="in" data-t="app.planIntro" data-size="8.4 GB"></p>
+   <p class="in" data-t="app.planIntro" data-size="8.4&nbsp;GB"></p>
    <div class="code">
-    <p class="row"><span># <span data-t="rule.upd.label"></span>  2.1&nbsp;GB  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p">~/Library/Caches/com.example.app/org.sparkle-project.Sparkle  2.1&nbsp;GB</span></p>
-    <p class="row"><span># <span data-t="rule.npm.label"></span>  3.2&nbsp;GB  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p">~/.npm/_cacache  3.2&nbsp;GB</span></p>
-    <p class="row"><span># <span data-t="rule.brew.label"></span>  1.6&nbsp;GB  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p">~/Library/Caches/Homebrew/downloads  1.6&nbsp;GB</span></p>
-    <p class="row"><span># <span data-t="rule.ext.label"></span>  0.9&nbsp;GB  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p">~/.vscode/extensions/ms-python.python-2026.8.0  0.9&nbsp;GB</span></p>
-    <p class="row"><span># <span data-t="rule.pip.label"></span>  0.6&nbsp;GB  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p">~/Library/Caches/pip  0.6&nbsp;GB</span></p>
+    <p class="row"><span class="h"><span class="n"># <span data-t="rule.upd.label"></span></span>  <span class="hs">2.1&nbsp;GB</span>  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p"><span class="sg">~/</span><wbr><span class="sg">Library/</span><wbr><span class="sg">Caches/</span><wbr><span class="sg">com.example.app/</span><wbr><span class="sg">org.sparkle-project.Sparkle</span><span class="ps">  2.1&nbsp;GB</span></span></p>
+    <p class="row"><span class="h"><span class="n"># <span data-t="rule.npm.label"></span></span>  <span class="hs">3.2&nbsp;GB</span>  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p"><span class="sg">~/</span><wbr><span class="sg">.npm/</span><wbr><span class="sg">_cacache</span><span class="ps">  3.2&nbsp;GB</span></span></p>
+    <p class="row"><span class="h"><span class="n"># <span data-t="rule.brew.label"></span></span>  <span class="hs">1.6&nbsp;GB</span>  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p"><span class="sg">~/</span><wbr><span class="sg">Library/</span><wbr><span class="sg">Caches/</span><wbr><span class="sg">Homebrew/</span><wbr><span class="sg">downloads</span><span class="ps">  1.6&nbsp;GB</span></span></p>
+    <p class="row"><span class="h"><span class="n"># <span data-t="rule.ext.label"></span></span>  <span class="hs">0.9&nbsp;GB</span>  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p"><span class="sg">~/</span><wbr><span class="sg">.vscode/</span><wbr><span class="sg">extensions/</span><wbr><span class="sg">ms-python.python-2026.8.0</span><span class="ps">  0.9&nbsp;GB</span></span></p>
+    <p class="row"><span class="h"><span class="n"># <span data-t="rule.pip.label"></span></span>  <span class="hs">0.6&nbsp;GB</span>  <span class="m">· <span data-t="app.methodRemove"></span></span></span><span class="p"><span class="sg">~/</span><wbr><span class="sg">Library/</span><wbr><span class="sg">Caches/</span><wbr><span class="sg">pip</span><span class="ps">  0.6&nbsp;GB</span></span></p>
    </div>
    <p class="lab ex" data-t="app.planExpiry"></p>
-   <div class="act" aria-hidden="true"><span class="b2" data-t="app.cancel"></span><span class="b1" data-t="app.confirm" data-size="8.4 GB"></span></div>
+   <div class="act" aria-hidden="true"><span class="b2" data-t="app.cancel"></span><span class="b1" data-t="app.confirm" data-size="8.4&nbsp;GB"></span></div>
   </div></div>
  </section>
  <section class="A rv">
