@@ -6,6 +6,16 @@ See where the space went. Then clean.
 
 <sub>Music: "Werq" Kevin MacLeod (incompetech.com) · [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)</sub>
 
+## Is this you?
+
+- Your Mac says the disk is almost full, and you didn't download anything big.
+- You found a 200 GB folder. Three AI chats gave you three different answers about deleting it.
+- You asked your AI agent to clean up. It can't touch files outside its sandbox.
+
+Rake draws your whole disk as one map, so you see what is taking the space.
+It marks what is safe, shows the exact list, and moves nothing until you confirm.
+iCloud Drive, Photos, Keychains and backups are never touched.
+
 Rake draws your disk as one map, tells you which parts are safe to clean, and shows the exact list before anything is touched.
 
 ## Download

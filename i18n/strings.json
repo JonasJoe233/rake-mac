@@ -214,7 +214,16 @@
   "site.three.free.h": "Free.",
   "site.three.free.b": "No account, no trial, no upgrade screen.",
   "site.three.open.h": "Open source.",
-  "site.three.open.b": "MIT licensed. Read every line on GitHub."
+  "site.three.open.b": "MIT licensed. Read every line on GitHub.",
+  "rule.agentvm.label": "AI agent virtual machine",
+  "rule.agentvm.why": "A Linux virtual machine that desktop AI agents, such as the Claude desktop app, keep on your Mac. It grows because the agent runs inside it, app updates unpack a fresh system image, and it keeps a separate session disk. If it's removed, the app builds it again on its next launch. Rake isn't sure yet, so it only shows this and doesn't delete it.",
+  "rule.agentvm.cmd": "~/Library/Application Support/Claude*/vm_bundles",
+  "rule.agentcache.label": "AI app caches and runtimes",
+  "rule.agentcache.why": "Download caches and runtimes of desktop AI apps such as Doubao and Codex. They grow as the app loads pages, updates plugins and installs its runtime. If they're removed, the app downloads them again the next time it needs them, so it's slower the first time. Rake isn't sure yet, so it only shows this and doesn't delete it.",
+  "rule.agentcache.cmd": "~/Library/Caches/Doubao, ~/Library/Application Support/Doubao/gecko_cache, ~/.cache/codex-runtimes",
+  "rule.llm.label": "Local AI models",
+  "rule.llm.why": "Model files downloaded by Hugging Face, Ollama and LM Studio. Each model you try adds another download, often several GB. If they're removed, you download a model again before using it, which takes time and data. The models can be downloaded again, but Rake can't tell which ones you still use, so it only shows them and doesn't delete them.",
+  "rule.llm.cmd": "~/.cache/huggingface, ~/.ollama/models, ~/.lmstudio/models"
  },
  "zh-Hans": {
   "app.name": "Rake",
@@ -431,6 +440,15 @@
   "site.three.free.h": "免费。",
   "site.three.free.b": "不用注册，没有试用期，没有升级弹窗。",
   "site.three.open.h": "开源。",
-  "site.three.open.b": "MIT 协议。每一行代码都在 GitHub 上。"
+  "site.three.open.b": "MIT 协议。每一行代码都在 GitHub 上。",
+  "rule.agentvm.label": "AI Agent 虚拟机",
+  "rule.agentvm.why": "桌面 AI Agent（例如 Claude 桌面版）在你 Mac 上建的 Linux 虚拟机。Agent 在里面运行，App 更新时会解压新的系统镜像，里面还有一块单独的会话数据盘，所以会越来越大。删掉后，App 下次启动会重新建一个。Rake 还不确定，所以只展示，不删。",
+  "rule.agentvm.cmd": "~/Library/Application Support/Claude*/vm_bundles",
+  "rule.agentcache.label": "AI 应用缓存和运行时",
+  "rule.agentcache.why": "豆包、Codex 等桌面 AI 应用的下载缓存和运行时。App 加载网页、更新插件、装运行环境时会往这里写，所以会涨。删掉后，App 下次用到时重新下载，第一次会慢一点。Rake 还不确定，所以只展示，不删。",
+  "rule.agentcache.cmd": "~/Library/Caches/Doubao、~/Library/Application Support/Doubao/gecko_cache、~/.cache/codex-runtimes",
+  "rule.llm.label": "本地 AI 模型",
+  "rule.llm.why": "Hugging Face、Ollama、LM Studio 下载的模型文件。每试一个模型就多下一份，一个常有几 GB。删掉后，要用时得重新下载，费时间也费流量。模型能重下，但 Rake 不知道你还在用哪些，所以只展示，不删。",
+  "rule.llm.cmd": "~/.cache/huggingface、~/.ollama/models、~/.lmstudio/models"
  }
 }
