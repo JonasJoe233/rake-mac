@@ -187,8 +187,11 @@ footer p+p{margin-top:12px}
   .video{aspect-ratio:1/1}
   .rev{padding:24px 20px 20px}
   /* 窄屏：大小只留在名称那一行，右对齐；处理方式另起一行；路径行不再重复大小 */
-  .rev .row .h{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1ch}
-  .rev .h .m{grid-column:1/-1}
+  /* 名称可以折行，大小固定在第一行右侧。white-space:normal 让名称和大小之间的空格不变成独立的弹性项 */
+  .rev .row .h{display:flex;flex-wrap:wrap;column-gap:1ch;white-space:normal}
+  .rev .h .n{flex:1;min-width:0}
+  .rev .h .hs{white-space:nowrap;align-self:flex-start}
+  .rev .h .m{flex-basis:100%}
   .rev .ps{display:none}
   .tick li{height:44px}
   #snd{right:12px;top:12px;height:36px;padding:0 14px}
