@@ -209,6 +209,7 @@ $("#lists").addEventListener("click",e=>{
   const r=e.target.closest(".row[data-id]"); if(!r) return; const id=r.dataset.id;
   if(e.target.tagName==="INPUT"){toggle(id); return;}
   open=open===id?null:id; focusId=open; refresh();
+  const row=document.querySelector(`.row[data-id="${id}"]`); row&&row.scrollIntoView({block:"nearest",behavior:"smooth"});
 });
 function toggle(id){if(!PICK(byId[id].tier))return; sel.has(id)?sel.delete(id):sel.add(id); refresh();}
 function scrollState(){const l=$("#lists"),pn=$("#panel");
