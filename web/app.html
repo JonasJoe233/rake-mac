@@ -164,7 +164,7 @@ let STONES=[], KEEP=[], LOG=[], FAKE_PATHS={npm:[["~/.npm/_cacache",3.2]],brew:[
 /* ===== 状态与右侧面板（v7 原样，文案换成 T()） ===== */
 const $=s=>document.querySelector(s);
 let byId={};
-const sel=new Set(), cleaned=new Set(), DONE={}; let FREED=0, BIG=null, REFRESHING=false; let open=null, focusId=null, LIVE=false, GROW_BASE="—", SITES=null, KEY="", SCANNING=false, DENIED=0, SCANNED="";
+const sel=new Set(), cleaned=new Set(), DONE={}; let FREED=0, BIG=null, REFRESHING=false; let USED=0, open=null, focusId=null, LIVE=false, GROW_BASE="—", SITES=null, KEY="", SCANNING=false, DENIED=0, SCANNED="";
 // 大小单位是 GB（1000 进制，和 macOS「储存空间」一致）。不到 1 GB 显示整数 MB，10 GB 以下留一位小数。和引擎的 fmtSize 一致
 const G=v=>{if(v<=0)return "0 MB"; const mb=Math.round(v*1000); return mb<1000?Math.max(1,mb)+" MB":(v>=10?v.toFixed(0):v.toFixed(1))+" GB";};
 const sum=ids=>[...ids].reduce((s,id)=>s+byId[id].size,0);
@@ -179,7 +179,7 @@ function renderPanel(){
   }
   const free=freeNow(), pick=sum(sel);
   bigTo(free+pick<10?Math.round((free+pick)*10)/10:Math.round(free+pick));
-  $("#heroNote").innerHTML=sel.size?`${T("app.freeAfter")}<br>${T("app.nowIs",{size:G(free)})}`:`${T("app.freeNow")}<br>${T("app.totalIs",{size:G(tot())})}`;
+  $("#heroNote").innerHTML=sel.size?`${T("app.freeAfter")}<br>${T("app.nowIs",{size:G(free)})}`:`${T("app.freeNow")}<br>${T("app.totalIs",{size:G(USED)})}`;
   const auto=sum(tierIds("auto")), dec=sum(tierIds("decide"));
   const regen=sum(tierIds("auto").filter(i=>byId[i].kind==="caches"));
   $("#summary").textContent=auto+dec>0?T("app.summary",{all:G(auto+dec),regen:G(regen)}):T("app.summaryEmpty");
@@ -381,6 +381,8 @@ document.querySelectorAll("[data-sheet]").forEach(b=>b.onclick=()=>{
 function setData(d){
   STONES=d.stones; KEEP=d.keep; LOG=d.log; GROW_BASE=d.grow_base||"—"; DENIED=d.denied_count||0; SCANNED=d.scanned_at||"";
   byId=Object.fromEntries(STONES.map(s=>[s.id,s])); cleaned.clear(); SITES=null;
+  USED=d.used!=null?d.used:tot()-(byId.free?byId.free.size:0); // 整盘已用；演示数据没有这个字段，用各块之和
+  $('[data-t="app.legendUnk"]').hidden=!STONES.some(s=>s.kind==="unknown"); // 真实扫描里没有未归类块（都算进系统数据），图例跟着藏
   [...sel].forEach(i=>{if(!byId[i]||!PICK(byId[i].tier)) sel.delete(i);});
 }
 function footLive(){$("#foot").textContent=T("app.footLive",{time:SCANNED})+(DENIED?" "+T("app.footDenied",{n:DENIED}):"");}

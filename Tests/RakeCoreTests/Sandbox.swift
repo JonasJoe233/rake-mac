@@ -36,13 +36,14 @@ final class Sandbox {
         return try! Strings.load(root.appendingPathComponent("i18n/strings.json"), lang: "en")
     }()
 
-    func engine(rules: [Rule]? = nil, ttl: TimeInterval = 600) -> Engine {
+    func engine(rules: [Rule]? = nil, ttl: TimeInterval = 600, volumes: VolumeInfo? = nil) -> Engine {
         var c = EngineConfig(home: home, stateDir: home + "/.rake-state", strings: Sandbox.strings)
         if let rules { c.rules = rules }
         c.scanSystem = false
         c.planTTL = ttl
         c.minStoneGB = 0
-        c.volumes = { VolumeInfo(total: 100 << 30, free: 10 << 30, dataUsed: 80 << 30, vmUsed: 2 << 30, swapUsed: 1 << 30, uptimeDays: 3) }
+        let v = volumes ?? VolumeInfo(total: 100 << 30, free: 10 << 30, dataUsed: 80 << 30, vmUsed: 2 << 30, swapUsed: 1 << 30, uptimeDays: 3)
+        c.volumes = { v }
         c.now = { [unowned self] in self.now }
         c.trasher = { [unowned self] url in  // 假废纸篓：挪进沙盒里的 .FakeTrash
             let dst = self.trash + "/" + url.lastPathComponent

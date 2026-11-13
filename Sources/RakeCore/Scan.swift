@@ -4,7 +4,8 @@ import Foundation
 extension Engine {
     struct Leaf { var stone: Stone; var bytes: Int64; var claims: [(String, Int64)] }
 
-    static let systemRoots = ["/Applications", "/Library", "/opt/homebrew", "/usr/local", "/private/var", "/Users/Shared"]
+    // 系统目录只量要单独成块的几处。系统数据不扫描，按已用减去其他各块算（/private/var 里的 swap 等会和别的块重复计数）
+    static let systemRoots = ["/Applications", "/opt/homebrew", "/usr/local"]
     static let installData = "/System/Volumes/Data/macOS Install Data"
     // 大目录排前面，并行时不会最后才开始
     static let heavyLibrary = ["Application Support", "Containers", "Caches", "Group Containers", "Developer", "Mail", "Messages"]
@@ -68,8 +69,6 @@ extension Engine {
         if config.scanSystem {
             add("apps", .tools, [], why: s.t("why.apps"), bytes: (sizes["/Applications"] ?? 0) + size(h("Applications")))
             add("devenv", .tools, [], why: s.t("why.devenv"), bytes: (sizes["/opt/homebrew"] ?? 0) + (sizes["/usr/local"] ?? 0))
-            add("sysdata", .system, [], why: s.t("why.sysdata"),
-                bytes: ["/Library", "/private/var", "/Users/Shared"].reduce(0) { $0 + (sizes[$1] ?? 0) })
             if let mid = sizes[Engine.installData], mid > 500 * MB {
                 add("mid", .system, [], tier: .manual, why: s.t("rule.mid.why"), cmd: s.t("rule.mid.cmd"),
                     label: s.t("rule.mid.label"), bytes: mid)
@@ -96,12 +95,15 @@ extension Engine {
         add("dot", .tools, [], why: s.t("why.dot"), bytes: max(0, residual(hidden)))
         add("appdata", .tools, [], why: s.t("why.appdata"), bytes: max(0, residual([lib], [h("Library/Caches")])))
         add("appc", .caches, [], why: s.t("why.appc"), bytes: max(0, residual([h("Library/Caches")])))
-        let classified = leaf.reduce(0) { $0 + $1.bytes }
-        add("unk", .unknown, [], why: s.t("why.unk"), bytes: max(0, v.dataUsed - classified))
         add("sys", .system, [], why: s.t("why.sys"), bytes: max(0, v.total - v.free - v.dataUsed - v.vmUsed))
         add("swap", .system, [], tier: .manual,
             why: s.t("rule.swap.why", ["used": fmtSize(gb(v.swapUsed)), "days": String(format: "%.0f", v.uptimeDays)]),
             cmd: s.t("rule.swap.cmd"), label: s.t("rule.swap.label"), bytes: v.vmUsed)
+        // 系统数据 = 已用 − 其他各块。其他各块加起来超过已用时取 0，超出多少记进 overcount，不静默吞掉
+        let used = max(0, v.total - v.free)
+        let others = leaf.reduce(0) { $0 + $1.bytes }
+        add("sysdata", .system, [], why: s.t("why.sysdata"), bytes: max(0, used - others))
+        let overcount = max(0, others - used)
 
         // 4. 增长、排序、存快照
         let (baseDate, base) = baseline()
@@ -120,7 +122,7 @@ extension Engine {
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd HH:mm"
         return ScanResult(scannedAt: f.string(from: config.now()), growBase: baseDate, stones: stones,
-                          keep: Guard.keepList(s), log: history(), total: gb(v.total),
+                          keep: Guard.keepList(s), log: history(), total: gb(v.total), used: gb(used), overcount: gb(overcount),
                           deniedCount: denied, denied: deniedSamples.map { disp($0) })
     }
 }

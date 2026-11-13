@@ -30,7 +30,7 @@ public enum Rules {
     static let day: TimeInterval = 86400
 
     public static let standard: [Rule] = [
-        Rule(id: "upd", tier: .auto, kind: .caches, minAge: 6 * hour) { c in
+        Rule(id: "upd", tier: .auto, kind: .caches, minAge: 6 * hour, minSize: MB) { c in  // 不到 1 MB 的多是空的 Sparkle 目录，不列
             c.g("Library/Caches/*-updater/update.zip", "Library/Caches/*-updater/pending",
                 "Library/Caches/*.ShipIt/update.*", "Library/Caches/*/org.sparkle-project.Sparkle",
                 "Library/Containers/*/Data/Library/Caches/*/org.sparkle-project.Sparkle")

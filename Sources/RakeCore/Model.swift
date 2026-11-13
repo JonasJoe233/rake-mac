@@ -33,11 +33,13 @@ public struct ScanResult: Codable {
     public var keep: [[String]]
     public var log: [[String]]
     public var total: Double
+    public var used: Double        // 整盘已用 = 总量 − 可用（GB）。界面「已用」显示它
+    public var overcount: Double   // 其他各块加起来超过已用的部分（GB），正常为 0
     public var deniedCount: Int
     public var denied: [String]
 
     enum CodingKeys: String, CodingKey {
-        case scannedAt = "scanned_at", growBase = "grow_base", stones, keep, log, total
+        case scannedAt = "scanned_at", growBase = "grow_base", stones, keep, log, total, used, overcount
         case deniedCount = "denied_count", denied
     }
 
@@ -52,6 +54,8 @@ public struct ScanResult: Codable {
         try c.encode(keep, forKey: .keep)
         try c.encode(log, forKey: .log)
         try c.encode(total, forKey: .total)
+        try c.encode(used, forKey: .used)
+        try c.encode(overcount, forKey: .overcount)
         try c.encode(deniedCount, forKey: .deniedCount)
         try c.encode(denied, forKey: .denied)
     }

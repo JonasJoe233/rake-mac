@@ -14,7 +14,7 @@ import Testing
         let ids = r.stones.map { $0.id }
         #expect(ids.first == "free")
         #expect(Set(ids).count == ids.count)
-        #expect(["npm", "pip", "docs", "unk", "swap"].allSatisfy(ids.contains))
+        #expect(["npm", "pip", "docs", "sysdata", "swap"].allSatisfy(ids.contains))
         for s in r.stones where s.tier?.pickable == true { #expect(s.why?.isEmpty == false && s.cmd?.isEmpty == false) }
         for s in r.stones where s.kind == .content { #expect(s.tier == nil || ["dl", "trash"].contains(s.id)) }
         #expect(r.stones.allSatisfy { $0.size >= 0 })
@@ -40,7 +40,7 @@ import Testing
                 #"[{"identifier":{"id":"ms-python.python"},"relativeLocation":"ms-python.python-2026.8.0"}]"#)
         sb.file("Downloads/old-big.dmg", ageDays: 40); sb.file("Downloads/new.dmg")
         var rules = Rules.standard
-        if let i = rules.firstIndex(where: { $0.id == "dl" }) { rules[i].minSize = 0 }  // 不在测试里造 150 MB 文件
+        for id in ["dl", "upd"] { if let i = rules.firstIndex(where: { $0.id == id }) { rules[i].minSize = 0 } }  // 不在测试里造 150 MB、1 MB 的文件
         let e = sb.engine(rules: rules)
         let p = try e.plan(ids: ["npm", "pip", "uv", "brew", "vsix", "crx", "upd", "ext", "dl"])
         let got = Dictionary(uniqueKeysWithValues: p.items.map { ($0.id, $0.paths.map { $0.path }) })
