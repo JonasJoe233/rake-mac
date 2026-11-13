@@ -32,8 +32,10 @@ public struct Strings {
     }
 }
 
-/// 和界面里的 G() 一致：小于 0.095 G 显示 M。
+/// 和界面里的 G() 一致（web/app.html）：参数是 GB。不到 1 GB 显示整数 MB，10 GB 以下留一位小数，再大取整。
 func fmtSize(_ g: Double) -> String {
-    if g < 0.095 { return "\(max(1, Int((g * 1024).rounded()))) M" }
-    return g >= 10 ? String(format: "%.0f G", g) : String(format: "%.1f G", g)
+    if g <= 0 { return "0 MB" }
+    let mb = Int((g * 1000).rounded())
+    if mb < 1000 { return "\(max(1, mb)) MB" }
+    return g >= 10 ? String(format: "%.0f GB", g) : String(format: "%.1f GB", g)
 }

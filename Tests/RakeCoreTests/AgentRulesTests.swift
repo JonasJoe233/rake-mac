@@ -29,7 +29,7 @@ import Testing
     func recognized() throws {
         let sb = try seeded()
         let r = sb.engine().scan()
-        // 界面上的 size 按 GiB 取两位，小文件显示 0。字节数看扫描存下的快照
+        // 界面上的 size 按 GB 取三位，30 KB 的小文件显示 0。字节数看扫描存下的快照
         let snapDir = sb.home + "/.rake-state/snapshots"
         let snapName = try #require(try FileManager.default.contentsOfDirectory(atPath: snapDir).first)
         let bytes = try JSONDecoder().decode([String: Int64].self, from: Data(contentsOf: URL(fileURLWithPath: snapDir + "/" + snapName)))

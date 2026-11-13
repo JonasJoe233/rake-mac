@@ -52,7 +52,7 @@ const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 const clamp=t=>Math.max(0,Math.min(1,t));
 function textW(s,px){let w=0;for(const ch of s)w+=/[　-鿿＀-￯]/.test(ch)?px:px*.56;return w;}
 // 官网的标签和清单同一个单位：GB / MB。数字和单位之间用不换行空格
-const NB="\u00a0", G=v=>v<=0?"0"+NB+"MB":v<0.095?Math.max(1,Math.round(v*1024))+NB+"MB":(v>=10?v.toFixed(0):v.toFixed(1))+NB+"GB";
+const NB="\u00a0", G=v=>v<=0?"0"+NB+"MB":v<0.095?Math.max(1,Math.round(v*1000))+NB+"MB":(v>=10?v.toFixed(0):v.toFixed(1))+NB+"GB";
 // layout 只和尺寸有关（和语言无关），按尺寸缓存。手机上两节的图一样大，算一次两节共用
 const LAYOUTS=new Map();
 function layoutFor(W,H){const k=W+"x"+H; if(!LAYOUTS.has(k)) LAYOUTS.set(k,layout(STONES,W,H)); return LAYOUTS.get(k);}

@@ -165,7 +165,8 @@ let STONES=[], KEEP=[], LOG=[], FAKE_PATHS={npm:[["~/.npm/_cacache",3.2]],brew:[
 const $=s=>document.querySelector(s);
 let byId={};
 const sel=new Set(), cleaned=new Set(), DONE={}; let FREED=0, BIG=null, REFRESHING=false; let open=null, focusId=null, LIVE=false, GROW_BASE="—", SITES=null, KEY="", SCANNING=false, DENIED=0, SCANNED="";
-const G=v=>v<=0?"0 M":v<0.095?Math.max(1,Math.round(v*1024))+" M":(v>=10?v.toFixed(0):v.toFixed(1))+" G";
+// 大小单位是 GB（1000 进制，和 macOS「储存空间」一致）。不到 1 GB 显示整数 MB，10 GB 以下留一位小数。和引擎的 fmtSize 一致
+const G=v=>{if(v<=0)return "0 MB"; const mb=Math.round(v*1000); return mb<1000?Math.max(1,mb)+" MB":(v>=10?v.toFixed(0):v.toFixed(1))+" GB";};
 const sum=ids=>[...ids].reduce((s,id)=>s+byId[id].size,0);
 const tierIds=t=>STONES.filter(s=>s.tier===t&&!cleaned.has(s.id)).map(s=>s.id);
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
@@ -313,9 +314,9 @@ async function apply(p){ // App：引擎只认 token，只动这份清单
 /* 大数字：从旧值滚到新值。减少动态效果时直接跳 */
 function bigTo(v){
   const el=$("#big"), from=BIG==null?v:BIG; BIG=v;
-  if(from===v||matchMedia("(prefers-reduced-motion: reduce)").matches){el.innerHTML=(v<10?v.toFixed(1):v)+"<small>G</small>"; return;}
+  if(from===v||matchMedia("(prefers-reduced-motion: reduce)").matches){el.innerHTML=(v<10?v.toFixed(1):v)+"<small>GB</small>"; return;}
   const t0=performance.now(), D=900, step=now=>{const k=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k,3);
-    const x=from+(v-from)*e; el.innerHTML=(v<10?x.toFixed(1):Math.round(x))+"<small>G</small>"; if(k<1&&BIG===v) requestAnimationFrame(step);};
+    const x=from+(v-from)*e; el.innerHTML=(v<10?x.toFixed(1):Math.round(x))+"<small>GB</small>"; if(k<1&&BIG===v) requestAnimationFrame(step);};
   requestAnimationFrame(step);
 }
 let toastT;

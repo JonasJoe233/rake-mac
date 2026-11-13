@@ -11,7 +11,7 @@ public struct EngineConfig {
     public var now: () -> Date = { Date() }
     public var trasher: (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) }
     public var planTTL: TimeInterval = 600
-    public var minStoneGiB = 0.01            // 小于这个的块不画
+    public var minStoneGB = 0.01             // 小于这个的块不画（GB）
 
     public init(home: String, stateDir: String, strings: Strings) {
         self.home = home; self.stateDir = stateDir; self.strings = strings
@@ -81,7 +81,7 @@ public final class Engine {
                 item.size += gb(b)
                 entries.append(Entry(id: id, path: p, method: r.method, bytes: b))
             }
-            item.size = (item.size * 100).rounded() / 100
+            item.size = (item.size * 1000).rounded() / 1000  // 和 gb() 同精度，不到 1 GB 时按 MB 显示
             items.append(item)
         }
         var rng = SystemRandomNumberGenerator()
@@ -98,7 +98,7 @@ public final class Engine {
 
     // MARK: apply
 
-    /// progress：每清完一个 id 回调一次（id、直接删掉的 GiB、移进废纸篓的 GiB、跳过几条），给界面逐项打勾。
+    /// progress：每清完一个 id 回调一次（id、直接删掉的 GB、移进废纸篓的 GB、跳过几条），给界面逐项打勾。
     public func apply(ids raw: [String], token: String,
                       progress: ((String, Double, Double, Int) -> Void)? = nil) throws -> ApplyResult {
         lock.lock()

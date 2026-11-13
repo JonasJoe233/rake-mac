@@ -107,6 +107,6 @@ const DEMO=[
 const RULE_IDS=new Set(["dl","trash","swap","upd","npm","brew","ext","pip","uv","crx","vsix","mid"]);
 function demoStones(T){
   return DEMO.map(([id,size,kind,tier])=>{const r=RULE_IDS.has(id), k=r?"rule."+id:"stone."+id, s={id,size,kind,label:T(r?k+".label":k)};
-    if(tier){s.tier=tier; s.why=T(k+".why",{used:"4.0 G",days:"9"}); s.cmd=T(k+".cmd",{n:"3"});} else if(id!=="free") s.why=T("why."+id);
+    if(tier){s.tier=tier; s.why=T(k+".why",{used:"4.0 GB",days:"9"}); s.cmd=T(k+".cmd",{n:"3"});} else if(id!=="free") s.why=T("why."+id);
     return s;});
 }

@@ -41,7 +41,7 @@ final class Sandbox {
         if let rules { c.rules = rules }
         c.scanSystem = false
         c.planTTL = ttl
-        c.minStoneGiB = 0
+        c.minStoneGB = 0
         c.volumes = { VolumeInfo(total: 100 << 30, free: 10 << 30, dataUsed: 80 << 30, vmUsed: 2 << 30, swapUsed: 1 << 30, uptimeDays: 3) }
         c.now = { [unowned self] in self.now }
         c.trasher = { [unowned self] url in  // 假废纸篓：挪进沙盒里的 .FakeTrash

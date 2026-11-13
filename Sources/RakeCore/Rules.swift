@@ -46,7 +46,7 @@ public enum Rules {
         Rule(id: "pip", tier: .auto, kind: .caches) { c in c.exists("Library/Caches/pip") },
         Rule(id: "uv", tier: .auto, kind: .caches) { c in c.exists(".cache/uv") },
         Rule(id: "brew", tier: .auto, kind: .caches) { c in c.g("Library/Caches/Homebrew/*") },
-        Rule(id: "dl", tier: .decide, kind: .content, minAge: 30 * day, minSize: 150 * MiB) { c in
+        Rule(id: "dl", tier: .decide, kind: .content, minAge: 30 * day, minSize: 150 * MB) { c in
             let d = c.h("Downloads")
             let names = (try? FileManager.default.contentsOfDirectory(atPath: d)) ?? []
             return names.filter { !$0.hasPrefix(".") }.sorted().map { d + "/" + $0 }

@@ -70,7 +70,7 @@ extension Engine {
             add("devenv", .tools, [], why: s.t("why.devenv"), bytes: (sizes["/opt/homebrew"] ?? 0) + (sizes["/usr/local"] ?? 0))
             add("sysdata", .system, [], why: s.t("why.sysdata"),
                 bytes: ["/Library", "/private/var", "/Users/Shared"].reduce(0) { $0 + (sizes[$1] ?? 0) })
-            if let mid = sizes[Engine.installData], mid > 500 * MiB {
+            if let mid = sizes[Engine.installData], mid > 500 * MB {
                 add("mid", .system, [], tier: .manual, why: s.t("rule.mid.why"), cmd: s.t("rule.mid.cmd"),
                     label: s.t("rule.mid.label"), bytes: mid)
             }
@@ -112,8 +112,8 @@ extension Engine {
             var st = l.stone
             st.size = gb(l.bytes)
             snap[st.id] = l.bytes
-            if let prev = base[st.id], l.bytes - prev > Int64(GiB / 20) { st.grow = gb(l.bytes - prev) }
-            if st.size >= config.minStoneGiB { stones.append(st) }
+            if let prev = base[st.id], l.bytes - prev > Int64(GB / 20) { st.grow = gb(l.bytes - prev) }
+            if st.size >= config.minStoneGB { stones.append(st) }
         }
         saveSnapshot(snap)
         let f = DateFormatter()

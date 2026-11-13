@@ -14,7 +14,7 @@ public enum Method: String, Codable {
     case remove, trash
 }
 
-/// v7 界面用的一块卵石。size / grow 单位是 GiB。
+/// v7 界面用的一块卵石。size / grow 单位是 GB（1000 进制，和 macOS「储存空间」一致）。
 public struct Stone: Codable, Equatable {
     public var id: String
     public var label: String
@@ -57,7 +57,7 @@ public struct ScanResult: Codable {
     }
 }
 
-/// 编码成 v7 要的 ["路径", GiB] 二元数组。
+/// 编码成 v7 要的 ["路径", GB] 二元数组。
 public struct PathEntry: Codable, Equatable {
     public var path: String
     public var size: Double
@@ -93,9 +93,9 @@ public struct Plan: Codable {
 }
 
 public struct ApplyResult: Codable {
-    public var freed: Double      // 卷可用空间实际增加的 GiB
-    public var removed: Double    // 直接删掉的 GiB（按 plan 时的大小）
-    public var trashed: Double    // 移进废纸篓的 GiB，清倒废纸篓前不算腾出
+    public var freed: Double      // 卷可用空间实际增加的 GB
+    public var removed: Double    // 直接删掉的 GB（按 plan 时的大小）
+    public var trashed: Double    // 移进废纸篓的 GB，清倒废纸篓前不算腾出
     public var done: [String]
     public var skipped: [String]
     public var errors: [String]
@@ -117,7 +117,9 @@ public enum RakeError: Error, CustomStringConvertible, Equatable {
     }
 }
 
-let GiB = 1024.0 * 1024 * 1024
-let MiB: Int64 = 1024 * 1024
+// 大小一律按 1000 进制算，和 macOS「系统设置 → 储存空间」、访达一致
+let GB = 1_000_000_000.0
+let MB: Int64 = 1_000_000
 
-func gb(_ bytes: Int64) -> Double { (Double(max(bytes, 0)) / GiB * 100).rounded() / 100 }
+/// 字节换成 GB，留三位小数：小于 1 GB 时界面按 MB 显示，要精确到 1 MB。
+func gb(_ bytes: Int64) -> Double { (Double(max(bytes, 0)) / GB * 1000).rounded() / 1000 }
