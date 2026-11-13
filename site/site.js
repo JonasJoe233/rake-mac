@@ -212,9 +212,16 @@ let rt; addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>{
 
 /* ===== 视频：静音自动播放；点声音开关取消静音并从 0 秒播；滚出视口暂停，回来再播 ===== */
 const V=$("#promo"), SND=$("#snd"), PLAY=$("#play");
-let VIS=false, RESUME=!REDUCE, STARTED=false;
+let VIS=false, RESUME=!REDUCE, STARTED=false, WAIT=0;
+// 加载态：中间按钮换成加载圈。缓冲中视频不算 paused，没有这个状态时用户点了看不出有没有反应
+function busy(on){clearTimeout(WAIT); PLAY.classList.toggle("busy",on); PLAY.setAttribute("aria-busy",on?"true":"false"); if(on) PLAY.hidden=false;}
 SND.onclick=()=>{
-  if(V.muted){V.muted=false; V.currentTime=0; V.play().catch(()=>{}); SND.dataset.t="site.video.soundOff";}
+  if(V.muted){
+    V.muted=false; SND.dataset.t="site.video.soundOff";
+    // 手机放的是没有音轨的 rake_sq_web.mp4，开声音时换成带音轨的 rake_sq.mp4 从头放。关声音只静音，不换回
+    if(/rake_sq_web\.mp4$/.test(V.currentSrc)){busy(true); V.src="rake_sq.mp4"; V.load();}
+    V.currentTime=0; V.play().catch(()=>busy(false));
+  }
   else{V.muted=true; SND.dataset.t="site.video.soundOn";}
   SND.textContent=T(SND.dataset.t);
 };
@@ -224,13 +231,20 @@ function tryPlay(){
   const t=setTimeout(()=>{if(!STARTED) fallback();},1500);
   V.play().catch(e=>{if(e&&e.name==="NotAllowedError"){clearTimeout(t); fallback();}});
 }
-V.addEventListener("playing",()=>{STARTED=true; PLAY.hidden=true;});
-// 点击算用户手势，照样静音，声音只归开关管
-PLAY.onclick=()=>{RESUME=false; V.play().catch(()=>{});};
-// 点视频切换播放和暂停。停下时留个播放按钮，看得出是暂停而不是海报
+V.addEventListener("playing",()=>{STARTED=true; busy(false); PLAY.hidden=true;});
+// 卡住 400ms 还没接着放，才显示加载圈；短暂缓冲不闪
+["waiting","stalled"].forEach(n=>V.addEventListener(n,()=>{
+  if(V.paused) return; clearTimeout(WAIT);
+  WAIT=setTimeout(()=>{if(!V.paused&&V.readyState<3) busy(true);},400);
+}));
+V.addEventListener("pause",()=>{if(PLAY.classList.contains("busy")) busy(false); else clearTimeout(WAIT);});
+// 点击算用户手势，照样静音，声音只归开关管。先进加载态，play() 失败再回到播放图标
+PLAY.onclick=()=>{RESUME=false; busy(true); V.play().catch(()=>busy(false));};
+// 点视频切换播放和暂停。缓冲中点不暂停，只亮加载圈。停下时留个播放按钮，看得出是暂停而不是海报
 if(!REDUCE) V.addEventListener("click",()=>{
-  if(V.paused){RESUME=false; V.play().catch(()=>{PLAY.hidden=false;});}
-  else{V.pause(); PLAY.hidden=false;}
+  if(!V.paused&&V.readyState<3){busy(true); return;}
+  if(V.paused){RESUME=false; V.play().catch(()=>{busy(false); PLAY.hidden=false;});}
+  else{V.pause(); busy(false); PLAY.hidden=false;}
 });
 if("IntersectionObserver" in window){
   new IntersectionObserver(([e])=>{

@@ -83,6 +83,12 @@ h2{font:500 var(--h2)/1.2 var(--serif);margin:0 0 16px}
 #play[hidden]{display:none}
 #play svg{width:20px;height:22px;fill:currentColor;margin-left:3px}
 #play:hover{background:var(--ink)}
+/* 缓冲中：同一个按钮换成加载圈。减少动态时圈不转 */
+#play .sp{display:none;width:24px;height:24px;margin:0;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-dasharray:42 100;animation:spin .9s linear infinite}
+#play.busy .ic{display:none}
+#play.busy .sp{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#play .sp{animation:none}}
 /* 手机和平板装不了 dmg：curl 框不显示，下载按钮改成把链接带到 Mac 上 */
 .nomac .cmd{display:none}
 .credit{text-align:center;margin-top:16px}
@@ -216,14 +222,14 @@ footer p+p{margin-top:12px}
  </header>
  <figure class="video card" id="video">
   <video id="promo" autoplay muted loop playsinline preload="metadata" data-t-aria="site.video.alt">
-   <source src="rake_sq.mp4" type="video/mp4" media="(max-width:719px)">
+   <source src="rake_sq_web.mp4" type="video/mp4" media="(max-width:719px)">
    <source src="rake.mp4" type="video/mp4">
   </video>
-  <button id="play" type="button" hidden data-t-aria="site.video.play"><svg viewBox="0 0 20 22" aria-hidden="true"><path d="M2 1.5v19L19 11z"/></svg></button>
+  <button id="play" type="button" hidden aria-busy="false" data-t-aria="site.video.play"><svg class="ic" viewBox="0 0 20 22" aria-hidden="true"><path d="M2 1.5v19L19 11z"/></svg><svg class="sp" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg></button>
   <button id="snd" type="button" data-t="site.video.soundOn"></button>
  </figure>
  <script>/* <source media> 只在载入时选一次。海报和描述跟着载入时的宽度走，之后宽度跨档也不换，免得和正在放的那一版对不上 */
- {const v=document.getElementById("promo"),sq=matchMedia("(max-width:719px)").matches;v.poster=sq?"poster_sq.jpg":"poster.jpg";if(sq)v.dataset.tAria="site.video.altSq";
+ {const v=document.getElementById("promo"),sq=matchMedia("(max-width:719px)").matches;v.poster=sq?"poster_sq.jpg":"poster.jpg";if(sq){v.dataset.tAria="site.video.altSq";v.preload="auto";} /* 手机版静音片只有 300 KB，整段预载 */
  /* 减少动态：不自动播放，只留海报和原生控件 */
  if(matchMedia("(prefers-reduced-motion: reduce)").matches){v.removeAttribute("autoplay");v.autoplay=false;v.pause();v.controls=true;document.getElementById("snd").hidden=true;}}</script>
  <p class="lab credit"><a href="http://creativecommons.org/licenses/by/4.0/" data-t="site.video.credit"></a></p>
